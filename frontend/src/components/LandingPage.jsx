@@ -392,7 +392,9 @@ const LandingPage = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button className="bg-gradient-to-r from-green-600 to-emerald-700 text-white px-8 py-4 rounded-full font-semibold flex items-center justify-center gap-2 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+              <button onClick={() => {
+                window.location.href = "/main";
+              }} className="bg-gradient-to-r from-green-600 to-emerald-700 text-white px-8 py-4 rounded-full font-semibold flex items-center justify-center gap-2 hover:shadow-2xl hover:scale-105 transition-all duration-300">
                 <Upload className="w-5 h-5" />
                 {t.cta_primary}
               </button>
