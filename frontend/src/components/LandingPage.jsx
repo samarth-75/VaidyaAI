@@ -194,7 +194,7 @@ const LandingPage = () => {
       if (!isDeleting && index <= fullText.length) {
         setLogoText(fullText.slice(0, index));
         index++;
-        
+
         if (index > fullText.length) {
           pauseCount = 20; // Pause at full text
           isDeleting = true;
@@ -205,7 +205,7 @@ const LandingPage = () => {
         } else {
           setLogoText(fullText.slice(0, index));
           index--;
-          
+
           if (index === 0) {
             isDeleting = false;
             pauseCount = 10; // Pause before restarting
@@ -266,7 +266,7 @@ const LandingPage = () => {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width / 2, canvas.height / 2);
-      
+
       // Draw floating particles
       particles.forEach(p => {
         ctx.fillStyle = `rgba(34, 197, 94, ${p.opacity})`;
@@ -285,19 +285,19 @@ const LandingPage = () => {
       rotation += 0.01;
       const centerX = canvas.width / 4;
       const centerY = canvas.height / 4;
-      
+
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate(rotation);
-      
+
       // Document shadow
       ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
       ctx.fillRect(-85, -115, 170, 230);
-      
+
       // Document
       ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
       ctx.fillRect(-80, -120, 160, 220);
-      
+
       // Document lines
       ctx.strokeStyle = 'rgba(34, 197, 94, 0.3)';
       ctx.lineWidth = 2;
@@ -307,7 +307,7 @@ const LandingPage = () => {
         ctx.lineTo(60, i);
         ctx.stroke();
       }
-      
+
       // Heart icon on document
       ctx.fillStyle = 'rgba(239, 68, 68, 0.8)';
       ctx.beginPath();
@@ -320,7 +320,7 @@ const LandingPage = () => {
       ctx.lineTo(25, -35);
       ctx.closePath();
       ctx.fill();
-      
+
       ctx.restore();
 
       animationRef.current = requestAnimationFrame(animate);
@@ -357,10 +357,10 @@ const LandingPage = () => {
               <span className="inline-block w-0.5 h-8 bg-green-600 ml-1 animate-pulse"></span>
             </span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Languages className="w-4 h-4 text-green-600" />
-            <select 
+            <select
               value={currentLang}
               onChange={(e) => setCurrentLang(e.target.value)}
               className="bg-white border-2 border-green-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-400 cursor-pointer"
@@ -377,7 +377,7 @@ const LandingPage = () => {
       <section className="min-h-screen flex items-center pt-24 px-6">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center w-full">
           {/* Left Content */}
-          <div 
+          <div
             className="space-y-6"
             style={{
               transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
@@ -390,10 +390,10 @@ const LandingPage = () => {
             <p className="text-xl text-gray-600 leading-relaxed">
               {t.hero_subtitle}
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button onClick={() => {
-                window.location.href = "/main";
+                window.location.href = "/login";
               }} className="bg-gradient-to-r from-green-600 to-emerald-700 text-white px-8 py-4 rounded-full font-semibold flex items-center justify-center gap-2 hover:shadow-2xl hover:scale-105 transition-all duration-300">
                 <Upload className="w-5 h-5" />
                 {t.cta_primary}
@@ -406,14 +406,14 @@ const LandingPage = () => {
           </div>
 
           {/* Right 3D Canvas */}
-          <div 
+          <div
             className="relative h-[500px]"
             style={{
               transform: `translate(${mousePosition.x * -0.3}px, ${mousePosition.y * -0.3}px) translateY(${scrollY * 0.1}px)`,
               transition: 'transform 0.3s ease-out'
             }}
           >
-            <canvas 
+            <canvas
               ref={canvasRef}
               className="w-full h-full"
             />
@@ -428,14 +428,14 @@ const LandingPage = () => {
           <h2 className="text-4xl font-bold text-center mb-16 text-gray-900">
             {t.process_title}
           </h2>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { icon: FileText, title: t.process_step1, color: 'from-red-500 to-orange-500' },
               { icon: Brain, title: t.process_step2, color: 'from-green-500 to-emerald-500' },
               { icon: Heart, title: t.process_step3, color: 'from-emerald-500 to-teal-500' }
             ].map((step, idx) => (
-              <div 
+              <div
                 key={idx}
                 className="relative group"
                 style={{
@@ -469,14 +469,14 @@ const LandingPage = () => {
             <Volume2 className="w-6 h-6 text-green-600" />
             <Eye className="w-6 h-6 text-emerald-600" />
           </div>
-          
+
           <h2 className="text-4xl font-bold mb-4 text-gray-900">
             {t.audio_title}
           </h2>
           <p className="text-xl text-gray-600 mb-8">
             {t.audio_subtitle}
           </p>
-          
+
           <button className="bg-white border-2 border-green-600 text-green-600 px-10 py-4 rounded-full font-semibold flex items-center justify-center gap-3 mx-auto hover:bg-green-50 transition-all duration-300 hover:scale-105">
             <Play className="w-6 h-6" />
             {t.audio_cta}
@@ -490,7 +490,7 @@ const LandingPage = () => {
           <h2 className="text-4xl font-bold text-center mb-16 text-gray-900">
             {t.trust_title}
           </h2>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { title: t.trust_point1, desc: t.trust_desc1, icon: Shield, color: 'bg-green-100 text-green-600' },

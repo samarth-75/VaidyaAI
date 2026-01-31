@@ -1,4 +1,6 @@
 import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   Upload,
   FileText,
@@ -265,6 +267,9 @@ const translations = {
 ========================= */
 
 const VaidyaAIApp = ({ language = 'en' }) => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
   const [currentLang, setCurrentLang] = useState(language);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -275,6 +280,11 @@ const VaidyaAIApp = ({ language = 'en' }) => {
   const fileInputRef = useRef(null);
 
   const t = translations[currentLang];
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -294,10 +304,10 @@ const VaidyaAIApp = ({ language = 'en' }) => {
 
   const analyzeReports = () => {
     if (uploadedFiles.length === 0) return;
-    
+
     setAnalyzing(true);
     setAnalysisComplete(false);
-    
+
     // Simulate AI analysis
     setTimeout(() => {
       setAnalyzing(false);
@@ -359,7 +369,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
       {/* Sidebar */}
       <div className={`fixed top-0 left-0 h-full bg-gradient-to-b from-emerald-900 to-teal-900 text-white transition-all duration-500 z-50 ${sidebarOpen ? 'w-72' : 'w-20'} shadow-2xl`}>
         <div className="p-6">
-          <button 
+          <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="mb-8 p-2 hover:bg-emerald-800 rounded-lg transition-all duration-300"
           >
@@ -381,7 +391,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
           </div>
 
           <div className="absolute bottom-6 left-6 right-6">
-            <button className="w-full flex items-center gap-4 p-3 hover:bg-red-800 rounded-xl transition-all duration-300 group">
+            <button onClick={handleLogout} className="w-full flex items-center gap-4 p-3 hover:bg-red-800 rounded-xl transition-all duration-300 group">
               <LogOut className="w-6 h-6 group-hover:scale-110 transition-transform" />
               <span className={`font-medium whitespace-nowrap transition-all duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
                 Logout
@@ -403,6 +413,12 @@ const VaidyaAIApp = ({ language = 'en' }) => {
               <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'Crimson Text, serif' }}>Medical Report Analysis Dashboard</p>
             </div>
             <div className="flex items-center gap-4">
+              {user && (
+                <div className="flex items-center gap-2 bg-purple-100 px-4 py-2 rounded-full">
+                  <User className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm font-medium text-purple-800">{user.name}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 bg-emerald-100 px-4 py-2 rounded-full">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-emerald-800">AI Ready</span>
@@ -433,8 +449,8 @@ const VaidyaAIApp = ({ language = 'en' }) => {
                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                   className="hidden"
                 />
-                
-                <div 
+
+                <div
                   onClick={() => fileInputRef.current?.click()}
                   className="border-3 border-dashed border-emerald-300 rounded-2xl p-12 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/50 transition-all duration-300 group"
                 >
@@ -536,7 +552,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
                           <p className="font-semibold text-gray-800 truncate text-sm">{file.name}</p>
                           <p className="text-xs text-gray-500">{file.size}</p>
                         </div>
-                        <button 
+                        <button
                           onClick={() => removeFile(file.id)}
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-all"
                         >
@@ -587,18 +603,16 @@ const VaidyaAIApp = ({ language = 'en' }) => {
                 ) : (
                   <div className="space-y-4">
                     {remedies.map((remedy, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 hover:shadow-lg transition-all duration-300 animate-slideIn"
                         style={{ animationDelay: `${idx * 100}ms` }}
                       >
                         <div className="flex items-start gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                            remedy.priority === 'high' ? 'bg-orange-200' : 'bg-green-200'
-                          }`}>
-                            <remedy.icon className={`w-6 h-6 ${
-                              remedy.priority === 'high' ? 'text-orange-700' : 'text-green-700'
-                            }`} />
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${remedy.priority === 'high' ? 'bg-orange-200' : 'bg-green-200'
+                            }`}>
+                            <remedy.icon className={`w-6 h-6 ${remedy.priority === 'high' ? 'text-orange-700' : 'text-green-700'
+                              }`} />
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
