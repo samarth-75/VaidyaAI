@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import {
   Upload,
   FileText,
@@ -266,11 +267,11 @@ const translations = {
    COMPONENT
 ========================= */
 
-const VaidyaAIApp = ({ language = 'en' }) => {
+const VaidyaAIApp = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { currentLang } = useLanguage();
 
-  const [currentLang, setCurrentLang] = useState(language);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [analyzing, setAnalyzing] = useState(false);
@@ -351,10 +352,10 @@ const VaidyaAIApp = ({ language = 'en' }) => {
   };
 
   const sidebarItems = [
-    { icon: User, label: 'Profile', id: 'profile' },
-    { icon: Calendar, label: 'Dr. Appointment', id: 'appointment' },
-    { icon: History, label: 'History', id: 'history' },
-    { icon: Settings, label: 'Settings', id: 'settings' }
+    { icon: User, label: t.sidebar.profile, id: 'profile' },
+    { icon: Calendar, label: t.sidebar.appointment, id: 'appointment' },
+    { icon: History, label: t.sidebar.history, id: 'history' },
+    { icon: Settings, label: t.sidebar.settings, id: 'settings' }
   ];
 
   return (
@@ -394,7 +395,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
             <button onClick={handleLogout} className="w-full flex items-center gap-4 p-3 hover:bg-red-800 rounded-xl transition-all duration-300 group">
               <LogOut className="w-6 h-6 group-hover:scale-110 transition-transform" />
               <span className={`font-medium whitespace-nowrap transition-all duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                Logout
+                {t.sidebar.logout}
               </span>
             </button>
           </div>
@@ -410,7 +411,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
                 वैद्यAI
               </h1>
-              <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'Crimson Text, serif' }}>Medical Report Analysis Dashboard</p>
+              <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'Crimson Text, serif' }}>{t.title}</p>
             </div>
             <div className="flex items-center gap-4">
               {user && (
@@ -421,7 +422,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
               )}
               <div className="flex items-center gap-2 bg-emerald-100 px-4 py-2 rounded-full">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-emerald-800">AI Ready</span>
+                <span className="text-sm font-medium text-emerald-800">{t.aiReady}</span>
               </div>
             </div>
           </div>
@@ -435,9 +436,9 @@ const VaidyaAIApp = ({ language = 'en' }) => {
               <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
                   <Upload className="w-7 h-7" />
-                  Upload Medical Reports
+                  {t.uploadTitle}
                 </h2>
-                <p className="text-emerald-50 mt-2">Upload your PDF, images, or documents for AI analysis</p>
+                <p className="text-emerald-50 mt-2">{t.uploadSubtitle}</p>
               </div>
 
               <div className="p-8">
@@ -459,8 +460,8 @@ const VaidyaAIApp = ({ language = 'en' }) => {
                       <Upload className="w-10 h-10 text-emerald-600" />
                     </div>
                     <div>
-                      <p className="text-lg font-semibold text-gray-700">Drop files here or click to browse</p>
-                      <p className="text-sm text-gray-500 mt-1">Supports PDF, JPG, PNG, DOC (Max 10MB)</p>
+                      <p className="text-lg font-semibold text-gray-700">{t.dropFiles}</p>
+                      <p className="text-sm text-gray-500 mt-1">{t.supportedFiles}</p>
                     </div>
                   </div>
                 </div>
@@ -472,7 +473,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
               <div className="bg-gradient-to-r from-yellow-500 to-amber-500 p-6">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
                   <Sparkles className="w-7 h-7" />
-                  AI Analysis Output
+                  {t.outputTitle}
                 </h2>
               </div>
 
@@ -480,32 +481,32 @@ const VaidyaAIApp = ({ language = 'en' }) => {
                 {!analysisComplete && !analyzing && (
                   <div className="text-center py-16 text-gray-400">
                     <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                    <p className="text-lg">Upload files and click "Analyze" to see results</p>
+                    <p className="text-lg">{t.uploadPrompt}</p>
                   </div>
                 )}
 
                 {analyzing && (
                   <div className="text-center py-16">
                     <Loader className="w-16 h-16 mx-auto mb-4 text-emerald-600 animate-spin" />
-                    <p className="text-lg font-semibold text-gray-700">AI is analyzing your reports...</p>
-                    <p className="text-sm text-gray-500 mt-2">This may take a few moments</p>
+                    <p className="text-lg font-semibold text-gray-700">{t.analyzing}</p>
+                    <p className="text-sm text-gray-500 mt-2">{t.analyzingWait}</p>
                   </div>
                 )}
 
                 {analysisComplete && output && (
                   <div className="space-y-6 animate-fadeIn">
                     <div className="bg-emerald-50 border-l-4 border-emerald-500 p-6 rounded-lg">
-                      <h3 className="font-bold text-emerald-900 mb-3 text-lg">Summary</h3>
+                      <h3 className="font-bold text-emerald-900 mb-3 text-lg">{t.summary}</h3>
                       <p className="text-gray-700 leading-relaxed">{output.summary}</p>
                     </div>
 
                     <div className="space-y-3">
-                      <h3 className="font-bold text-gray-900 text-lg">Key Findings</h3>
+                      <h3 className="font-bold text-gray-900 text-lg">{t.keyFindings}</h3>
                       {output.findings.map((finding, idx) => (
                         <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
                           <div className="flex-1">
                             <p className="font-semibold text-gray-800">{finding.label}</p>
-                            <p className="text-sm text-gray-500">Normal: {finding.normal}</p>
+                            <p className="text-sm text-gray-500">{t.normal}: {finding.normal}</p>
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="font-bold text-lg text-gray-900">{finding.value}</span>
@@ -529,7 +530,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
               <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
                   <FileText className="w-7 h-7" />
-                  Uploaded Files
+                  {t.uploadedFilesTitle}
                 </h2>
               </div>
 
@@ -537,7 +538,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
                 {uploadedFiles.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
                     <File className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>No files uploaded yet</p>
+                    <p>{t.noFiles}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -572,12 +573,12 @@ const VaidyaAIApp = ({ language = 'en' }) => {
                     {analyzing ? (
                       <>
                         <Loader className="w-5 h-5 animate-spin" />
-                        Analyzing...
+                        {t.analyzingBtn}
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-5 h-5" />
-                        Analyze Reports
+                        {t.analyzeBtn}
                       </>
                     )}
                   </button>
@@ -590,7 +591,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
               <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
                   <Heart className="w-7 h-7" />
-                  Recommended Remedies
+                  {t.remediesTitle}
                 </h2>
               </div>
 
@@ -598,7 +599,7 @@ const VaidyaAIApp = ({ language = 'en' }) => {
                 {remedies.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
                     <Heart className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>Remedies will appear after analysis</p>
+                    <p>{t.remediesPrompt}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">

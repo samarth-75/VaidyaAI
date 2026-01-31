@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Loader, AlertCircle, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { authTranslations } from '../translations/authTranslations';
+import { Mail, Lock, User, UserPlus, ArrowLeft, Eye, EyeOff, Languages } from 'lucide-react';
 
 const Register = () => {
     const navigate = useNavigate();
     const { register } = useAuth();
+    const { currentLang, changeLanguage, languages } = useLanguage();
+    const t = authTranslations[currentLang];
 
     const [formData, setFormData] = useState({
         name: '',
@@ -13,10 +17,10 @@ const Register = () => {
         password: '',
         confirmPassword: ''
     });
-    const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({
@@ -27,248 +31,266 @@ const Register = () => {
     };
 
     const getPasswordStrength = (password) => {
-        if (password.length === 0) return { strength: 0, label: '', color: '' };
-        if (password.length < 6) return { strength: 1, label: 'Weak', color: 'bg-red-500' };
-        if (password.length < 10) return { strength: 2, label: 'Medium', color: 'bg-yellow-500' };
-        return { strength: 3, label: 'Strong', color: 'bg-green-500' };
+        if (password.length === 0) return null;
+        if (password.length < 6) return { level: 'weak', color: 'bg-red-500', text: t.passwordStrength.weak };
+        if (password.length < 10) return { level: 'medium', color: 'bg-yellow-500', text: t.passwordStrength.medium };
+        return { level: 'strong', color: 'bg-green-500', text: t.passwordStrength.strong };
     };
 
     const passwordStrength = getPasswordStrength(formData.password);
 
+    const validateForm = () => {
+        if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+            setError(t.errors.allFields);
+            return false;
+        }
+        if (formData.name.length < 2) {
+            setError(t.errors.nameLength);
+            return false;
+        }
+        if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            setError(t.errors.invalidEmail);
+            return false;
+        }
+        if (formData.password.length < 6) {
+            setError(t.errors.passwordLength);
+            return false;
+        }
+        if (formData.password !== formData.confirmPassword) {
+            setError(t.errors.passwordMismatch);
+            return false;
+        }
+        return true;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
 
-        // Validation
-        if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-            setError('Please fill in all fields');
-            return;
-        }
-
-        if (formData.name.length < 2) {
-            setError('Name must be at least 2 characters');
-            return;
-        }
-
-        if (formData.password.length < 6) {
-            setError('Password must be at least 6 characters');
-            return;
-        }
-
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
+        if (!validateForm()) return;
 
         setLoading(true);
+        setError('');
 
-        const result = await register(formData.name, formData.email, formData.password);
-
-        if (result.success) {
-            setSuccess('Registration successful! Redirecting to dashboard...');
-            setTimeout(() => {
-                navigate('/main');
-            }, 1500);
-        } else {
-            setError(result.message);
+        try {
+            await register(formData.name, formData.email, formData.password);
+            navigate('/main');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Registration failed. Please try again.');
+        } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center px-6 py-12">
-            {/* Background Pattern */}
-            <div className="fixed inset-0 opacity-20 pointer-events-none">
-                <div className="absolute top-0 left-0 w-96 h-96 bg-green-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-                <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-                <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-teal-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Animated Background Blobs */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+                <div className="absolute top-40 right-10 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+                <div className="absolute -bottom-8 left-20 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
             </div>
 
-            <div className="w-full max-w-md relative z-10">
-                {/* Back to Home */}
-                <Link
-                    to="/"
-                    className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 mb-6 font-medium transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                    Back to Home
-                </Link>
+            {/* Language Selector - Top Right */}
+            <div className="absolute top-6 right-6 z-10">
+                <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-md">
+                    <Languages className="w-4 h-4 text-emerald-600" />
+                    <select
+                        value={currentLang}
+                        onChange={(e) => changeLanguage(e.target.value)}
+                        className="bg-transparent border-none text-sm focus:outline-none cursor-pointer font-medium text-gray-700"
+                    >
+                        {languages.map(lang => (
+                            <option key={lang.code} value={lang.code}>{lang.name}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
 
-                {/* Register Card */}
-                <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-emerald-100 overflow-hidden">
+            {/* Register Card */}
+            <div className="relative z-10 w-full max-w-md">
+                <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-emerald-100">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-8 text-center">
-                        <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-                            वैद्यAI
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl mb-4 shadow-lg">
+                            <UserPlus className="w-8 h-8 text-white" />
+                        </div>
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                            {t.brandName}
                         </h1>
-                        <p className="text-emerald-50">Create your account to get started</p>
+                        <p className="text-gray-600 text-sm">
+                            {t.registerTitle}
+                        </p>
                     </div>
 
-                    {/* Form */}
-                    <div className="p-8">
-                        {error && (
-                            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-3">
-                                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                                <p className="text-red-700 text-sm">{error}</p>
-                            </div>
-                        )}
-
-                        {success && (
-                            <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg flex items-start gap-3">
-                                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                <p className="text-green-700 text-sm">{success}</p>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            {/* Name */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Full Name
-                                </label>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        placeholder="John Doe"
-                                        className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                                        disabled={loading}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Email */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Email Address
-                                </label>
-                                <div className="relative">
-                                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        placeholder="your.email@example.com"
-                                        className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                                        disabled={loading}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Password */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Password
-                                </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        placeholder="Minimum 6 characters"
-                                        className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                                        disabled={loading}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                    >
-                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                    </button>
-                                </div>
-                                {formData.password && (
-                                    <div className="mt-2">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full ${passwordStrength.color} transition-all duration-300`}
-                                                    style={{ width: `${(passwordStrength.strength / 3) * 100}%` }}
-                                                ></div>
-                                            </div>
-                                            <span className="text-xs font-medium text-gray-600">{passwordStrength.label}</span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Confirm Password */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Confirm Password
-                                </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                    <input
-                                        type="password"
-                                        name="confirmPassword"
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        placeholder="Re-enter your password"
-                                        className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                                        disabled={loading}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Submit Button */}
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold hover:shadow-xl hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                            >
-                                {loading ? (
-                                    <>
-                                        <Loader className="w-5 h-5 animate-spin" />
-                                        Creating Account...
-                                    </>
-                                ) : (
-                                    'Create Account'
-                                )}
-                            </button>
-                        </form>
-
-                        {/* Login Link */}
-                        <div className="mt-6 text-center">
-                            <p className="text-gray-600">
-                                Already have an account?{' '}
-                                <Link to="/login" className="text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">
-                                    Login Here
-                                </Link>
-                            </p>
+                    {/* Error Message */}
+                    {error && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                            {error}
                         </div>
+                    )}
+
+                    {/* Register Form */}
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        {/* Name Field */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t.nameLabel}
+                            </label>
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    placeholder={t.namePlaceholder}
+                                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                                    disabled={loading}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Email Field */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t.emailLabel}
+                            </label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder={t.emailPlaceholder}
+                                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                                    disabled={loading}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Password Field */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t.passwordLabel}
+                            </label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder={t.passwordPlaceholder}
+                                    className="w-full pl-11 pr-11 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                                    disabled={loading}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+
+                            {/* Password Strength Indicator */}
+                            {passwordStrength && (
+                                <div className="mt-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full ${passwordStrength.color} transition-all duration-300`}
+                                                style={{ width: passwordStrength.level === 'weak' ? '33%' : passwordStrength.level === 'medium' ? '66%' : '100%' }}
+                                            ></div>
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-600">{passwordStrength.text}</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Confirm Password Field */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t.confirmPasswordLabel}
+                            </label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder={t.confirmPasswordPlaceholder}
+                                    className="w-full pl-11 pr-11 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                                    disabled={loading}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            {loading ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    {t.creatingAccount}
+                                </>
+                            ) : (
+                                <>
+                                    <UserPlus className="w-5 h-5" />
+                                    {t.registerButton}
+                                </>
+                            )}
+                        </button>
+                    </form>
+
+                    {/* Footer Links */}
+                    <div className="mt-6 space-y-4">
+                        <div className="text-center text-sm text-gray-600">
+                            {t.haveAccount}{' '}
+                            <Link to="/login" className="text-emerald-600 hover:text-emerald-700 font-semibold">
+                                {t.loginHere}
+                            </Link>
+                        </div>
+
+                        <div className="text-center">
+                            <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-emerald-600 transition-colors">
+                                <ArrowLeft className="w-4 h-4" />
+                                {t.backToHome}
+                            </Link>
+                        </div>
+
+                        <p className="text-xs text-gray-500 text-center mt-6">
+                            {t.termsRegister}
+                        </p>
                     </div>
                 </div>
-
-                {/* Footer Note */}
-                <p className="text-center text-sm text-gray-500 mt-6">
-                    By creating an account, you agree to our Terms of Service and Privacy Policy
-                </p>
             </div>
 
             <style>{`
         @keyframes blob {
           0%, 100% { transform: translate(0, 0) scale(1); }
-          25% { transform: translate(20px, -50px) scale(1.1); }
-          50% { transform: translate(-20px, 20px) scale(0.9); }
-          75% { transform: translate(50px, 50px) scale(1.05); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
         }
-        
         .animate-blob {
-          animation: blob 20s infinite;
+          animation: blob 7s infinite;
         }
-        
         .animation-delay-2000 {
           animation-delay: 2s;
         }
-        
         .animation-delay-4000 {
           animation-delay: 4s;
         }

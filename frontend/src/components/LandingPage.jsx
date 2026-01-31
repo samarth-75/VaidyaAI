@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Play, Shield, Languages, Heart, Brain, FileText, Eye, Volume2, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const translations = {
   en: {
@@ -173,7 +174,7 @@ const translations = {
 };
 
 const LandingPage = () => {
-  const [currentLang, setCurrentLang] = useState('en');
+  const { currentLang, changeLanguage, languages } = useLanguage();
   const [logoText, setLogoText] = useState('');
   const [showAI, setShowAI] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -335,17 +336,6 @@ const LandingPage = () => {
     };
   }, []);
 
-  const languages = [
-    { code: 'en', name: 'English' },
-    { code: 'hi', name: 'हिन्दी' },
-    { code: 'mr', name: 'मराठी' },
-    { code: 'ta', name: 'தமிழ்' },
-    { code: 'te', name: 'తెలుగు' },
-    { code: 'bn', name: 'বাংলা' },
-    { code: 'gu', name: 'ગુજરાતી' },
-    { code: 'kn', name: 'ಕನ್ನಡ' }
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 font-sans overflow-x-hidden">
       {/* Navigation */}
@@ -362,7 +352,7 @@ const LandingPage = () => {
             <Languages className="w-4 h-4 text-green-600" />
             <select
               value={currentLang}
-              onChange={(e) => setCurrentLang(e.target.value)}
+              onChange={(e) => changeLanguage(e.target.value)}
               className="bg-white border-2 border-green-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-400 cursor-pointer"
             >
               {languages.map(lang => (
