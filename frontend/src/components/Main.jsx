@@ -2,6 +2,10 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
+import ProfilePage from "./ProfilePage";
+import AppointmentsPage from "./AppointmentsPage";
+import HistoryPage from "./HistoryPage";
+import SettingsPage from "./SettingsPage";
 import {
   Upload,
   FileText,
@@ -9,6 +13,8 @@ import {
   File,
   X,
   Sparkles,
+  ArrowLeft,
+  Shield,
   Menu,
   User,
   Calendar,
@@ -18,6 +24,7 @@ import {
   Loader,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   Leaf,
   Heart,
   Pill,
@@ -55,7 +62,16 @@ const translations = {
       appointment: "Dr. Appointment",
       history: "History",
       settings: "Settings",
-      logout: "Logout"
+      logout: "Logout",
+      backToDashboard: "Back to Dashboard"
+    },
+    disclaimer: {
+      title: "Important Disclaimer",
+      body: "VaidyaAI is an educational tool designed to help you understand your medical reports. It does NOT provide medical diagnosis, treatment advice, or prescriptions. Always consult a qualified healthcare professional for medical advice.",
+      point1: "This is NOT a medical diagnosis",
+      point2: "Always consult your doctor",
+      point3: "Educational purposes only",
+      button: "I Understand"
     }
   },
   hi: {
@@ -84,7 +100,16 @@ const translations = {
       appointment: "डॉक्टर की नियुक्ति",
       history: "इतिहास",
       settings: "सेटिंग्स",
-      logout: "लॉगआउट"
+      logout: "लॉगआउट",
+      backToDashboard: "डैशबोर्ड पर वापस"
+    },
+    disclaimer: {
+      title: "महत्वपूर्ण अस्वीकरण",
+      body: "वैद्यAI आपकी मेडिकल रिपोर्ट को समझने में मदद करने के लिए डिज़ाइन किया गया एक शैक्षिक उपकरण है। यह चिकित्सा निदान, उपचार सलाह या नुस्खे प्रदान नहीं करता। चिकित्सा सलाह के लिए हमेशा एक योग्य स्वास्थ्य पेशेवर से परामर्श करें।",
+      point1: "यह चिकित्सा निदान नहीं है",
+      point2: "हमेशा अपने डॉक्टर से परामर्श करें",
+      point3: "केवल शैक्षिक उद्देश्यों के लिए",
+      button: "मैं समझता/समझती हूँ"
     }
   },
   mr: {
@@ -113,7 +138,16 @@ const translations = {
       appointment: "डॉक्टर भेट",
       history: "इतिहास",
       settings: "सेटिंग्ज",
-      logout: "लॉगआउट"
+      logout: "लॉगआउट",
+      backToDashboard: "डॅशबोर्डवर परत"
+    },
+    disclaimer: {
+      title: "महत्त्वाचे अस्वीकरण",
+      body: "वैद्यAI हे तुमचे वैद्यकीय अहवाल समजून घेण्यासाठी तयार केलेले शैक्षणिक साधन आहे. हे वैद्यकीय निदान, उपचार सल्ला किंवा प्रिस्क्रिप्शन देत नाही. वैद्यकीय सल्ल्यासाठी नेहमी पात्र आरोग्य व्यावसायिकांचा सल्ला घ्या.",
+      point1: "हे वैद्यकीय निदान नाही",
+      point2: "नेहमी तुमच्या डॉक्टरांचा सल्ला घ्या",
+      point3: "केवळ शैक्षणिक हेतूंसाठी",
+      button: "मला समजले"
     }
   },
   ta: {
@@ -142,7 +176,16 @@ const translations = {
       appointment: "மருத்துவர் சந்திப்பு",
       history: "வரலாறு",
       settings: "அமைப்புகள்",
-      logout: "வெளியேறு"
+      logout: "வெளியேறு",
+      backToDashboard: "டாஷ்போர்டுக்குத் திரும்பு"
+    },
+    disclaimer: {
+      title: "முக்கியமான மறுப்பு",
+      body: "VaidyaAI உங்கள் மருத்துவ அறிக்கைகளைப் புரிந்துகொள்ள உதவும் கல்வி கருவி. இது மருத்துவ நோய் கண்டறிதல், சிகிச்சை ஆலோசனை அல்லது மருந்துச் சீட்டுகளை வழங்காது. மருத்துவ ஆலோசனைக்கு எப்போதும் தகுதிவாய்ந்த மருத்துவரை அணுகவும்.",
+      point1: "இது மருத்துவ நோய் கண்டறிதல் அல்ல",
+      point2: "எப்போதும் உங்கள் மருத்துவரை அணுகவும்",
+      point3: "கல்வி நோக்கங்களுக்கு மட்டுமே",
+      button: "நான் புரிந்துகொள்கிறேன்"
     }
   },
   te: {
@@ -171,7 +214,16 @@ const translations = {
       appointment: "వైద్యుల అపాయింట్‌మెంట్",
       history: "చరిత్ర",
       settings: "సెట్టింగ్‌లు",
-      logout: "లాగ్అవుట్"
+      logout: "లాగ్అవుట్",
+      backToDashboard: "డాష్‌బోర్డ్‌కు తిరిగి"
+    },
+    disclaimer: {
+      title: "ముఖ్యమైన నిరాకరణ",
+      body: "VaidyaAI మీ వైద్య నివేదికలను అర్థం చేసుకోవడంలో సహాయం చేయడానికి రూపొందించబడిన విద్యా సాధనం. ఇది వైద్య రోగ నిర్ధారణ, చికిత్స సలహా లేదా ప్రిస్క్రిప్షన్‌లను అందించదు. వైద్య సలహా కోసం ఎల్లప్పుడూ అర్హత కలిగిన వైద్య నిపుణులను సంప్రదించండి.",
+      point1: "ఇది వైద్య రోగ నిర్ధారణ కాదు",
+      point2: "ఎల్లప్పుడూ మీ వైద్యుడిని సంప్రదించండి",
+      point3: "విద్యా ప్రయోజనాల కోసం మాత్రమే",
+      button: "నేను అర్థం చేసుకున్నాను"
     }
   },
   bn: {
@@ -200,7 +252,16 @@ const translations = {
       appointment: "ডাক্তার অ্যাপয়েন্টমেন্ট",
       history: "ইতিহাস",
       settings: "সেটিংস",
-      logout: "লগআউট"
+      logout: "লগআউট",
+      backToDashboard: "ড্যাশবোর্ডে ফিরুন"
+    },
+    disclaimer: {
+      title: "গুরুত্বপূর্ণ দাবিত্যাগ",
+      body: "VaidyaAI আপনার চিকিৎসা প্রতিবেদন বুঝতে সাহায্য করার জন্য ডিজাইন করা একটি শিক্ষামূলক সরঞ্জাম। এটি চিকিৎসা নির্ণয়, চিকিৎসা পরামর্শ বা প্রেসক্রিপশন প্রদান করে না। চিকিৎসা পরামর্শের জন্য সর্বদা একজন যোগ্য স্বাস্থ্য পেশাদারের সাথে পরামর্শ করুন।",
+      point1: "এটি চিকিৎসা নির্ণয় নয়",
+      point2: "সর্বদা আপনার ডাক্তারের সাথে পরামর্শ করুন",
+      point3: "শুধুমাত্র শিক্ষামূলক উদ্দেশ্যে",
+      button: "আমি বুঝেছি"
     }
   },
   gu: {
@@ -229,7 +290,16 @@ const translations = {
       appointment: "ડૉક્ટર મુલાકાત",
       history: "ઇતિહાસ",
       settings: "સેટિંગ્સ",
-      logout: "લૉગઆઉટ"
+      logout: "લૉગઆઉટ",
+      backToDashboard: "ડેશબોર્ડ પર પાછા"
+    },
+    disclaimer: {
+      title: "મહત્વપૂર્ણ અસ્વીકરણ",
+      body: "VaidyaAI તમારા તબીબી અહેવાલો સમજવામાં મદદ કરવા માટે રચાયેલ શૈક્ષણિક સાધન છે. તે તબીબી નિદાન, સારવાર સલાહ અથવા પ્રિસ્ક્રિપ્શન પ્રદાન કરતું નથી. તબીબી સલાહ માટે હંમેશા લાયક આરોગ્ય વ્યાવસાયિકની સલાહ લો.",
+      point1: "આ તબીબી નિદાન નથી",
+      point2: "હંમેશા તમારા ડૉક્ટરની સલાહ લો",
+      point3: "ફક્ત શૈક્ષણિક હેતુઓ માટે",
+      button: "હું સમજું છું"
     }
   },
   kn: {
@@ -258,7 +328,16 @@ const translations = {
       appointment: "ವೈದ್ಯರ ನೇಮಕಾತಿ",
       history: "ಇತಿಹಾಸ",
       settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
-      logout: "ಲಾಗ್ಔಟ್"
+      logout: "ಲಾಗ್ಔಟ್",
+      backToDashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗಿ"
+    },
+    disclaimer: {
+      title: "ಮಹತ್ವದ ಹಕ್ಕು ನಿರಾಕರಣೆ",
+      body: "VaidyaAI ನಿಮ್ಮ ವೈದ್ಯಕೀಯ ವರದಿಗಳನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು ಸಹಾಯ ಮಾಡಲು ವಿನ್ಯಾಸಗೊಳಿಸಲಾದ ಶೈಕ್ಷಣಿಕ ಸಾಧನವಾಗಿದೆ. ಇದು ವೈದ್ಯಕೀಯ ರೋಗನಿರ್ಣಯ, ಚಿಕಿತ್ಸೆ ಸಲಹೆ ಅಥವಾ ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್‌ಗಳನ್ನು ಒದಗಿಸುವುದಿಲ್ಲ. ವೈದ್ಯಕೀಯ ಸಲಹೆಗಾಗಿ ಯಾವಾಗಲೂ ಅರ್ಹ ಆರೋಗ್ಯ ವೃತ್ತಿಪರರನ್ನು ಸಂಪರ್ಕಿಸಿ.",
+      point1: "ಇದು ವೈದ್ಯಕೀಯ ರೋಗನಿರ್ಣಯ ಅಲ್ಲ",
+      point2: "ಯಾವಾಗಲೂ ನಿಮ್ಮ ವೈದ್ಯರನ್ನು ಸಂಪರ್ಕಿಸಿ",
+      point3: "ಶೈಕ್ಷಣಿಕ ಉದ್ದೇಶಗಳಿಗಾಗಿ ಮಾತ್ರ",
+      button: "ನಾನು ಅರ್ಥಮಾಡಿಕೊಂಡಿದ್ದೇನೆ"
     }
   }
 };
@@ -279,6 +358,19 @@ const VaidyaAIApp = () => {
   const [output, setOutput] = useState(null);
   const [remedies, setRemedies] = useState([]);
   const fileInputRef = useRef(null);
+  const [activePage, setActivePage] = useState('dashboard');
+  const [showDisclaimer, setShowDisclaimer] = useState(() => {
+    return !sessionStorage.getItem('vaidyaai_disclaimer_seen');
+  });
+
+  const handleDisclaimerClose = () => {
+    sessionStorage.setItem('vaidyaai_disclaimer_seen', 'true');
+    setShowDisclaimer(false);
+  };
+
+  const handleSidebarClick = (id) => {
+    setActivePage(id);
+  };
 
   const t = translations[currentLang];
 
@@ -381,9 +473,11 @@ const VaidyaAIApp = () => {
             {sidebarItems.map(item => (
               <button
                 key={item.id}
-                className="w-full flex items-center gap-4 p-3 hover:bg-emerald-800 rounded-xl transition-all duration-300 group"
+                onClick={() => handleSidebarClick(item.id)}
+                className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all duration-300 group ${activePage === item.id ? 'bg-emerald-700 shadow-lg' : 'hover:bg-emerald-800'
+                  }`}
               >
-                <item.icon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                <item.icon className={`w-6 h-6 transition-transform ${activePage === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
                 <span className={`font-medium whitespace-nowrap transition-all duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
                   {item.label}
                 </span>
@@ -428,213 +522,263 @@ const VaidyaAIApp = () => {
           </div>
         </nav>
 
-        {/* Main Grid */}
-        <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Upload Section */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-emerald-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
-                  <Upload className="w-7 h-7" />
-                  {t.uploadTitle}
-                </h2>
-                <p className="text-emerald-50 mt-2">{t.uploadSubtitle}</p>
-              </div>
+        {/* Conditional Page Rendering */}
+        {activePage === 'dashboard' && (
+          <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Upload Section */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-emerald-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
+                    <Upload className="w-7 h-7" />
+                    {t.uploadTitle}
+                  </h2>
+                  <p className="text-emerald-50 mt-2">{t.uploadSubtitle}</p>
+                </div>
 
-              <div className="p-8">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  multiple
-                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                  className="hidden"
-                />
+                <div className="p-8">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    multiple
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    className="hidden"
+                  />
 
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-3 border-dashed border-emerald-300 rounded-2xl p-12 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/50 transition-all duration-300 group"
-                >
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Upload className="w-10 h-10 text-emerald-600" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-semibold text-gray-700">{t.dropFiles}</p>
-                      <p className="text-sm text-gray-500 mt-1">{t.supportedFiles}</p>
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-3 border-dashed border-emerald-300 rounded-2xl p-12 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/50 transition-all duration-300 group"
+                  >
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Upload className="w-10 h-10 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold text-gray-700">{t.dropFiles}</p>
+                        <p className="text-sm text-gray-500 mt-1">{t.supportedFiles}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Output Section */}
+              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-yellow-100 overflow-hidden min-h-[400px]">
+                <div className="bg-gradient-to-r from-yellow-500 to-amber-500 p-6">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
+                    <Sparkles className="w-7 h-7" />
+                    {t.outputTitle}
+                  </h2>
+                </div>
+
+                <div className="p-8">
+                  {!analysisComplete && !analyzing && (
+                    <div className="text-center py-16 text-gray-400">
+                      <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-30" />
+                      <p className="text-lg">{t.uploadPrompt}</p>
+                    </div>
+                  )}
+
+                  {analyzing && (
+                    <div className="text-center py-16">
+                      <Loader className="w-16 h-16 mx-auto mb-4 text-emerald-600 animate-spin" />
+                      <p className="text-lg font-semibold text-gray-700">{t.analyzing}</p>
+                      <p className="text-sm text-gray-500 mt-2">{t.analyzingWait}</p>
+                    </div>
+                  )}
+
+                  {analysisComplete && output && (
+                    <div className="space-y-6 animate-fadeIn">
+                      <div className="bg-emerald-50 border-l-4 border-emerald-500 p-6 rounded-lg">
+                        <h3 className="font-bold text-emerald-900 mb-3 text-lg">{t.summary}</h3>
+                        <p className="text-gray-700 leading-relaxed">{output.summary}</p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h3 className="font-bold text-gray-900 text-lg">{t.keyFindings}</h3>
+                        {output.findings.map((finding, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <div className="flex-1">
+                              <p className="font-semibold text-gray-800">{finding.label}</p>
+                              <p className="text-sm text-gray-500">{t.normal}: {finding.normal}</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-lg text-gray-900">{finding.value}</span>
+                              {finding.status === 'elevated' && <AlertCircle className="w-6 h-6 text-orange-500" />}
+                              {finding.status === 'low' && <AlertCircle className="w-6 h-6 text-yellow-500" />}
+                              {finding.status === 'normal' && <CheckCircle className="w-6 h-6 text-emerald-500" />}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Output Section */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-yellow-100 overflow-hidden min-h-[400px]">
-              <div className="bg-gradient-to-r from-yellow-500 to-amber-500 p-6">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
-                  <Sparkles className="w-7 h-7" />
-                  {t.outputTitle}
-                </h2>
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* Uploaded Files */}
+              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-purple-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
+                    <FileText className="w-7 h-7" />
+                    {t.uploadedFilesTitle}
+                  </h2>
+                </div>
+
+                <div className="p-6 max-h-[400px] overflow-y-auto">
+                  {uploadedFiles.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                      <File className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>{t.noFiles}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {uploadedFiles.map(file => (
+                        <div key={file.id} className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 group hover:shadow-md transition-all">
+                          <div className="w-10 h-10 bg-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                            {file.type === 'pdf' && <FileText className="w-5 h-5 text-purple-700" />}
+                            {file.type === 'image' && <Image className="w-5 h-5 text-purple-700" />}
+                            {file.type === 'document' && <File className="w-5 h-5 text-purple-700" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-800 truncate text-sm">{file.name}</p>
+                            <p className="text-xs text-gray-500">{file.size}</p>
+                          </div>
+                          <button
+                            onClick={() => removeFile(file.id)}
+                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-all"
+                          >
+                            <X className="w-5 h-5 text-red-600" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {uploadedFiles.length > 0 && (
+                    <button
+                      onClick={analyzeReports}
+                      disabled={analyzing}
+                      className="w-full mt-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold hover:shadow-xl hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {analyzing ? (
+                        <>
+                          <Loader className="w-5 h-5 animate-spin" />
+                          {t.analyzingBtn}
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-5 h-5" />
+                          {t.analyzeBtn}
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div className="p-8">
-                {!analysisComplete && !analyzing && (
-                  <div className="text-center py-16 text-gray-400">
-                    <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                    <p className="text-lg">{t.uploadPrompt}</p>
-                  </div>
-                )}
+              {/* Remedies Section */}
+              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-green-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
+                    <Heart className="w-7 h-7" />
+                    {t.remediesTitle}
+                  </h2>
+                </div>
 
-                {analyzing && (
-                  <div className="text-center py-16">
-                    <Loader className="w-16 h-16 mx-auto mb-4 text-emerald-600 animate-spin" />
-                    <p className="text-lg font-semibold text-gray-700">{t.analyzing}</p>
-                    <p className="text-sm text-gray-500 mt-2">{t.analyzingWait}</p>
-                  </div>
-                )}
-
-                {analysisComplete && output && (
-                  <div className="space-y-6 animate-fadeIn">
-                    <div className="bg-emerald-50 border-l-4 border-emerald-500 p-6 rounded-lg">
-                      <h3 className="font-bold text-emerald-900 mb-3 text-lg">{t.summary}</h3>
-                      <p className="text-gray-700 leading-relaxed">{output.summary}</p>
+                <div className="p-6 max-h-[600px] overflow-y-auto">
+                  {remedies.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                      <Heart className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>{t.remediesPrompt}</p>
                     </div>
-
-                    <div className="space-y-3">
-                      <h3 className="font-bold text-gray-900 text-lg">{t.keyFindings}</h3>
-                      {output.findings.map((finding, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                          <div className="flex-1">
-                            <p className="font-semibold text-gray-800">{finding.label}</p>
-                            <p className="text-sm text-gray-500">{t.normal}: {finding.normal}</p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className="font-bold text-lg text-gray-900">{finding.value}</span>
-                            {finding.status === 'elevated' && <AlertCircle className="w-6 h-6 text-orange-500" />}
-                            {finding.status === 'low' && <AlertCircle className="w-6 h-6 text-yellow-500" />}
-                            {finding.status === 'normal' && <CheckCircle className="w-6 h-6 text-emerald-500" />}
+                  ) : (
+                    <div className="space-y-4">
+                      {remedies.map((remedy, idx) => (
+                        <div
+                          key={idx}
+                          className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 hover:shadow-lg transition-all duration-300 animate-slideIn"
+                          style={{ animationDelay: `${idx * 100}ms` }}
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${remedy.priority === 'high' ? 'bg-orange-200' : 'bg-green-200'
+                              }`}>
+                              <remedy.icon className={`w-6 h-6 ${remedy.priority === 'high' ? 'text-orange-700' : 'text-green-700'
+                                }`} />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="font-bold text-gray-900">{remedy.title}</h3>
+                                {remedy.priority === 'high' && (
+                                  <span className="text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded-full font-semibold">
+                                    High Priority
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-700 leading-relaxed">{remedy.description}</p>
+                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Uploaded Files */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-purple-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
-                  <FileText className="w-7 h-7" />
-                  {t.uploadedFilesTitle}
-                </h2>
-              </div>
-
-              <div className="p-6 max-h-[400px] overflow-y-auto">
-                {uploadedFiles.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <File className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>{t.noFiles}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {uploadedFiles.map(file => (
-                      <div key={file.id} className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 group hover:shadow-md transition-all">
-                        <div className="w-10 h-10 bg-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                          {file.type === 'pdf' && <FileText className="w-5 h-5 text-purple-700" />}
-                          {file.type === 'image' && <Image className="w-5 h-5 text-purple-700" />}
-                          {file.type === 'document' && <File className="w-5 h-5 text-purple-700" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-800 truncate text-sm">{file.name}</p>
-                          <p className="text-xs text-gray-500">{file.size}</p>
-                        </div>
-                        <button
-                          onClick={() => removeFile(file.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-all"
-                        >
-                          <X className="w-5 h-5 text-red-600" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {uploadedFiles.length > 0 && (
-                  <button
-                    onClick={analyzeReports}
-                    disabled={analyzing}
-                    className="w-full mt-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold hover:shadow-xl hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {analyzing ? (
-                      <>
-                        <Loader className="w-5 h-5 animate-spin" />
-                        {t.analyzingBtn}
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-5 h-5" />
-                        {t.analyzeBtn}
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
+        {activePage === 'profile' && (
+          <div className="animate-fadeIn">
+            <div className="p-6">
+              <button onClick={() => setActivePage('dashboard')} className="flex items-center gap-2 text-emerald-700 hover:text-emerald-900 font-medium mb-4 transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+                {t.sidebar.backToDashboard}
+              </button>
             </div>
-
-            {/* Remedies Section */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-green-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-3" style={{ fontFamily: 'Crimson Text, serif' }}>
-                  <Heart className="w-7 h-7" />
-                  {t.remediesTitle}
-                </h2>
-              </div>
-
-              <div className="p-6 max-h-[600px] overflow-y-auto">
-                {remedies.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <Heart className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>{t.remediesPrompt}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {remedies.map((remedy, idx) => (
-                      <div
-                        key={idx}
-                        className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 hover:shadow-lg transition-all duration-300 animate-slideIn"
-                        style={{ animationDelay: `${idx * 100}ms` }}
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${remedy.priority === 'high' ? 'bg-orange-200' : 'bg-green-200'
-                            }`}>
-                            <remedy.icon className={`w-6 h-6 ${remedy.priority === 'high' ? 'text-orange-700' : 'text-green-700'
-                              }`} />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-bold text-gray-900">{remedy.title}</h3>
-                              {remedy.priority === 'high' && (
-                                <span className="text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded-full font-semibold">
-                                  High Priority
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-gray-700 leading-relaxed">{remedy.description}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+            <ProfilePage />
           </div>
-        </div>
+        )}
+
+        {activePage === 'appointment' && (
+          <div className="animate-fadeIn">
+            <div className="p-6">
+              <button onClick={() => setActivePage('dashboard')} className="flex items-center gap-2 text-emerald-700 hover:text-emerald-900 font-medium mb-4 transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+                {t.sidebar.backToDashboard}
+              </button>
+            </div>
+            <AppointmentsPage />
+          </div>
+        )}
+
+        {activePage === 'history' && (
+          <div className="animate-fadeIn">
+            <div className="p-6">
+              <button onClick={() => setActivePage('dashboard')} className="flex items-center gap-2 text-emerald-700 hover:text-emerald-900 font-medium mb-4 transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+                {t.sidebar.backToDashboard}
+              </button>
+            </div>
+            <HistoryPage />
+          </div>
+        )}
+
+        {activePage === 'settings' && (
+          <div className="animate-fadeIn">
+            <div className="p-6">
+              <button onClick={() => setActivePage('dashboard')} className="flex items-center gap-2 text-emerald-700 hover:text-emerald-900 font-medium mb-4 transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+                {t.sidebar.backToDashboard}
+              </button>
+            </div>
+            <SettingsPage />
+          </div>
+        )}
       </div>
 
       <style>{`
@@ -678,6 +822,61 @@ const VaidyaAIApp = () => {
           opacity: 0;
         }
       `}</style>
+
+      {/* Disclaimer Popup */}
+      {showDisclaimer && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fadeIn">
+            {/* Orange Header */}
+            <div className="bg-gradient-to-r from-orange-400 to-amber-500 p-6 flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <Shield className="w-7 h-7 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>
+                {t.disclaimer.title}
+              </h2>
+            </div>
+
+            {/* Body */}
+            <div className="p-6">
+              <div className="flex items-start gap-3 mb-5">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                </div>
+                <p className="text-gray-700 leading-relaxed text-sm">
+                  {t.disclaimer.body}
+                </p>
+              </div>
+
+              {/* Bullet Points */}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></div>
+                  <span className="text-gray-700 text-sm">{t.disclaimer.point1}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></div>
+                  <span className="text-gray-700 text-sm">{t.disclaimer.point2}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></div>
+                  <span className="text-gray-700 text-sm">{t.disclaimer.point3}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Button */}
+            <div className="px-6 pb-6">
+              <button
+                onClick={handleDisclaimerClose}
+                className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+              >
+                {t.disclaimer.button}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
