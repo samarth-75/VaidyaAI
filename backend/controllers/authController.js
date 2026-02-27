@@ -7,7 +7,71 @@ const generateToken = (userId) => {
         expiresIn: '7d' // Token expires in 7 days
     });
 };
+    // @desc    Change user email
+    // @route   PUT /api/auth/change-email
+    // @access  Private
+    export const changeEmail = async (req, res) => {
+        try {
+            const { newEmail, password } = req.body;
+            if (!newEmail || !password) {
+                return res.status(400).json({ success: false, message: 'Please provide new email and password.' });
+            }
+            // Check if email is already taken
+            const existingUser = await User.findOne({ email: newEmail });
+            if (existingUser) {
+                return res.status(400).json({ success: false, message: 'Email already in use.' });
+            }
+            // Find user and check password
+            const user = await User.findById(req.user.id).select('+password');
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found.' });
+            }
+            const isPasswordCorrect = await user.comparePassword(password);
+            if (!isPasswordCorrect) {
+                return res.status(401).json({ success: false, message: 'Incorrect password.' });
+            }
+            user.email = newEmail;
+            await user.save();
+            // Generate new token
+            const token = generateToken(user._id);
+            res.status(200).json({ success: true, message: 'Email updated successfully.', token, user: { id: user._id, name: user.name, email: user.email } });
+        } catch (error) {
+            console.error('Change email error:', error);
+            res.status(500).json({ success: false, message: 'Server error during email change', error: error.message });
+        }
+    };
 
+    // @desc    Change user password
+    // @route   PUT /api/auth/change-password
+    // @access  Private
+    export const changePassword = async (req, res) => {
+        try {
+            const { currentPassword, newPassword } = req.body;
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ success: false, message: 'Please provide current and new password.' });
+            }
+            if (newPassword.length < 6) {
+                return res.status(400).json({ success: false, message: 'New password must be at least 6 characters.' });
+            }
+            // Find user and check current password
+            const user = await User.findById(req.user.id).select('+password');
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found.' });
+            }
+            const isPasswordCorrect = await user.comparePassword(currentPassword);
+            if (!isPasswordCorrect) {
+                return res.status(401).json({ success: false, message: 'Incorrect current password.' });
+            }
+            user.password = newPassword;
+            await user.save();
+            // Generate new token
+            const token = generateToken(user._id);
+            res.status(200).json({ success: true, message: 'Password updated successfully.', token, user: { id: user._id, name: user.name, email: user.email } });
+        } catch (error) {
+            console.error('Change password error:', error);
+            res.status(500).json({ success: false, message: 'Server error during password change', error: error.message });
+        }
+    };
 // @desc    Register new user
 // @route   POST /api/auth/register
 // @access  Public

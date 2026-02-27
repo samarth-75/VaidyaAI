@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { useLanguage } from "../context/LanguageContext";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -307,6 +308,67 @@ const SettingsPage = () => {
         return localStorage.getItem("vaidyaai_privacy_optout") === "true";
     });
 
+    // Status and loading states
+    const [emailStatus, setEmailStatus] = useState("");
+    const [passwordStatus, setPasswordStatus] = useState("");
+    const [emailLoading, setEmailLoading] = useState(false);
+    const [passwordLoading, setPasswordLoading] = useState(false);
+
+    const API_URL = "http://localhost:5000/api/auth";
+
+    // Handler for changing email
+    const handleChangeEmail = async (e) => {
+        e.preventDefault();
+        setEmailStatus("");
+        setEmailLoading(true);
+        try {
+            const response = await axios.put(`${API_URL}/change-email`, {
+                newEmail,
+                password: currentPassword
+            });
+            if (response.data.success) {
+                localStorage.setItem("token", response.data.token);
+                setEmailStatus("Email updated successfully.");
+                setNewEmail("");
+            } else {
+                setEmailStatus(response.data.message || "Failed to update email.");
+            }
+        } catch (error) {
+            setEmailStatus(error.response?.data?.message || "Failed to update email.");
+        }
+        setEmailLoading(false);
+    };
+
+    // Handler for changing password
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        setPasswordStatus("");
+        setPasswordLoading(true);
+        if (newPassword !== confirmPassword) {
+            setPasswordStatus("New password and confirmation do not match.");
+            setPasswordLoading(false);
+            return;
+        }
+        try {
+            const response = await axios.put(`${API_URL}/change-password`, {
+                currentPassword,
+                newPassword
+            });
+            if (response.data.success) {
+                localStorage.setItem("token", response.data.token);
+                setPasswordStatus("Password updated successfully.");
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+            } else {
+                setPasswordStatus(response.data.message || "Failed to update password.");
+            }
+        } catch (error) {
+            setPasswordStatus(error.response?.data?.message || "Failed to update password.");
+        }
+        setPasswordLoading(false);
+    };
+
     const handlePrivacyToggle = () => {
         const newValue = !privacyOptOut;
         setPrivacyOptOut(newValue);
@@ -337,117 +399,129 @@ const SettingsPage = () => {
             </div>
 
             {/* Change Email Section */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-emerald-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-5">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-3" style={{ fontFamily: "Crimson Text, serif" }}>
-                        <Mail className="w-6 h-6" />
-                        {t.emailSection}
-                    </h2>
-                    <p className="text-emerald-50 text-sm mt-1">{t.emailDesc}</p>
-                </div>
-                <div className="p-6 space-y-4">
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t.currentEmail}</label>
-                        <div className="w-full px-4 py-3 bg-gray-100 rounded-xl border border-gray-200 text-gray-600">
-                            {user?.email || "user@example.com"}
+                <form onSubmit={handleChangeEmail} className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-emerald-100 overflow-hidden">
+                    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-5">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-3" style={{ fontFamily: "Crimson Text, serif" }}>
+                            <Mail className="w-6 h-6" />
+                            {t.emailSection}
+                        </h2>
+                        <p className="text-emerald-50 text-sm mt-1">{t.emailDesc}</p>
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.currentEmail}</label>
+                            <div className="w-full px-4 py-3 bg-gray-100 rounded-xl border border-gray-200 text-gray-600">
+                                {user?.email || "user@example.com"}
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t.newEmail}</label>
-                        <input
-                            type="email"
-                            value={newEmail}
-                            onChange={(e) => setNewEmail(e.target.value)}
-                            placeholder={t.newEmailPlaceholder}
-                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all duration-300"
-                        />
-                    </div>
-                    <button className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2">
-                        <Save className="w-5 h-5" />
-                        {t.saveEmail}
-                    </button>
-                </div>
-            </div>
-
-            {/* Change Password Section */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-purple-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-5">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-3" style={{ fontFamily: "Crimson Text, serif" }}>
-                        <Lock className="w-6 h-6" />
-                        {t.passwordSection}
-                    </h2>
-                    <p className="text-purple-50 text-sm mt-1">{t.passwordDesc}</p>
-                </div>
-                <div className="p-6 space-y-4">
-                    {/* Current Password */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t.currentPassword}</label>
-                        <div className="relative">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.newEmail}</label>
                             <input
-                                type={showCurrentPassword ? "text" : "password"}
+                                type="email"
+                                value={newEmail}
+                                onChange={(e) => setNewEmail(e.target.value)}
+                                placeholder={t.newEmailPlaceholder}
+                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all duration-300"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.currentPassword}</label>
+                            <input
+                                type="password"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
                                 placeholder={t.currentPasswordPlaceholder}
-                                className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all duration-300"
+                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all duration-300"
                             />
-                            <button
-                                type="button"
-                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
-                            >
-                                {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
                         </div>
+                        <button type="submit" disabled={emailLoading} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2">
+                            <Save className="w-5 h-5" />
+                            {emailLoading ? "Updating..." : t.saveEmail}
+                        </button>
+                        {emailStatus && <div className="mt-2 text-sm text-emerald-700">{emailStatus}</div>}
                     </div>
+                </form>
 
-                    {/* New Password */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t.newPassword}</label>
-                        <div className="relative">
-                            <input
-                                type={showNewPassword ? "text" : "password"}
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder={t.newPasswordPlaceholder}
-                                className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all duration-300"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowNewPassword(!showNewPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
-                            >
-                                {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
+            {/* Change Password Section */}
+                <form onSubmit={handleChangePassword} className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-purple-100 overflow-hidden">
+                    <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-5">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-3" style={{ fontFamily: "Crimson Text, serif" }}>
+                            <Lock className="w-6 h-6" />
+                            {t.passwordSection}
+                        </h2>
+                        <p className="text-purple-50 text-sm mt-1">{t.passwordDesc}</p>
+                    </div>
+                    <div className="p-6 space-y-4">
+                        {/* Current Password */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.currentPassword}</label>
+                            <div className="relative">
+                                <input
+                                    type={showCurrentPassword ? "text" : "password"}
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    placeholder={t.currentPasswordPlaceholder}
+                                    className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all duration-300"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
+                                >
+                                    {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Confirm Password */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">{t.confirmPassword}</label>
-                        <div className="relative">
-                            <input
-                                type={showConfirmPassword ? "text" : "password"}
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder={t.confirmPasswordPlaceholder}
-                                className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all duration-300"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
-                            >
-                                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
+                        {/* New Password */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.newPassword}</label>
+                            <div className="relative">
+                                <input
+                                    type={showNewPassword ? "text" : "password"}
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder={t.newPasswordPlaceholder}
+                                    className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all duration-300"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
+                                >
+                                    {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2">
-                        <Save className="w-5 h-5" />
-                        {t.savePassword}
-                    </button>
-                </div>
-            </div>
+                        {/* Confirm Password */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">{t.confirmPassword}</label>
+                            <div className="relative">
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder={t.confirmPasswordPlaceholder}
+                                    className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all duration-300"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" disabled={passwordLoading} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2">
+                            <Save className="w-5 h-5" />
+                            {passwordLoading ? "Updating..." : t.savePassword}
+                        </button>
+                        {passwordStatus && <div className="mt-2 text-sm text-purple-700">{passwordStatus}</div>}
+                    </div>
+                </form>
 
             {/* Privacy Toggle Section */}
             <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-orange-100 overflow-hidden">
