@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -47,9 +48,31 @@ const Login = () => {
         setError('');
 
         try {
-            await login(formData.email, formData.password);
-            navigate('/main');
+            const result = await login(formData.email, formData.password);
+            if (result.success) {
+                navigate('/main');
+            } else {
+                toast.error(result.message || 'Login failed. Please try again.', {
+                    position: 'top-right',
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+                setError(result.message || 'Login failed. Please try again.');
+            }
         } catch (err) {
+            toast.error(err.response?.data?.message || 'Login failed. Please try again.', {
+                position: 'top-right',
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
             setError(err.response?.data?.message || 'Login failed. Please try again.');
         } finally {
             setLoading(false);

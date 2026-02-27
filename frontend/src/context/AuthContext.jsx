@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -91,6 +92,15 @@ export const AuthProvider = ({ children }) => {
                 return { success: true, message: response.data.message };
             }
         } catch (error) {
+            toast.error(error.response?.data?.message || 'Login failed', {
+                position: 'top-right',
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
             return {
                 success: false,
                 message: error.response?.data?.message || 'Login failed'

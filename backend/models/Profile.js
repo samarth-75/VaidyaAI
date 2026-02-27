@@ -7,7 +7,6 @@ const profileSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    fullName: { type: String, default: '' },
     dateOfBirth: { type: String, default: '' },
     gender: { type: String, default: '' },
     phone: { type: String, default: '' },

@@ -398,7 +398,6 @@ const ProfilePage = () => {
 
     // Profile state with default values (no photoUrl, no email — email comes from auth)
     const [profile, setProfile] = useState({
-        fullName: '',
         dateOfBirth: '',
         gender: '',
         phone: '',
@@ -508,20 +507,19 @@ const ProfilePage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Full Name */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">{t.fields.fullName}</label>
-                            <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    value={profile.fullName}
-                                    onChange={handleChange}
-                                    placeholder={t.placeholders.fullName}
-                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all outline-none"
-                                />
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">{t.fields.fullName}</label>
+                                <div className="relative">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={user?.name || ''}
+                                        readOnly
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-100 text-gray-700 cursor-not-allowed"
+                                    />
+                                </div>
                             </div>
-                        </div>
 
                         {/* Date of Birth */}
                         <div>

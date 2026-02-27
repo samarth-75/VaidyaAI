@@ -1,4 +1,5 @@
 import Profile from '../models/Profile.js';
+import User from '../models/User.js';
 
 // @desc    Get user profile
 // @route   GET /api/profile
@@ -6,13 +7,14 @@ import Profile from '../models/Profile.js';
 export const getProfile = async (req, res) => {
     try {
         const profile = await Profile.findOne({ userId: req.user._id });
+        const user = await User.findById(req.user._id);
 
         if (!profile) {
             // Return empty defaults if no profile exists yet
             return res.status(200).json({
                 success: true,
                 profile: {
-                    fullName: '',
+                    name: user?.name || '',
                     dateOfBirth: '',
                     gender: '',
                     phone: '',
@@ -32,7 +34,7 @@ export const getProfile = async (req, res) => {
         res.status(200).json({
             success: true,
             profile: {
-                fullName: profile.fullName,
+                name: user?.name || '',
                 dateOfBirth: profile.dateOfBirth,
                 gender: profile.gender,
                 phone: profile.phone,
@@ -63,7 +65,6 @@ export const getProfile = async (req, res) => {
 export const saveProfile = async (req, res) => {
     try {
         const {
-            fullName,
             dateOfBirth,
             gender,
             phone,
@@ -80,7 +81,6 @@ export const saveProfile = async (req, res) => {
 
         const profileData = {
             userId: req.user._id,
-            fullName: fullName || '',
             dateOfBirth: dateOfBirth || '',
             gender: gender || '',
             phone: phone || '',
@@ -106,7 +106,6 @@ export const saveProfile = async (req, res) => {
             success: true,
             message: 'Profile saved successfully',
             profile: {
-                fullName: profile.fullName,
                 dateOfBirth: profile.dateOfBirth,
                 gender: profile.gender,
                 phone: profile.phone,
