@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import {
     User,
-    Camera,
     Save,
     ArrowLeft,
     Heart,
@@ -34,8 +34,6 @@ const translations = {
         saving: "Saving...",
         saved: "Profile Saved!",
         back: "Back to Dashboard",
-        uploadPhoto: "Upload Photo",
-        changePhoto: "Change Photo",
         fields: {
             fullName: "Full Name",
             dateOfBirth: "Date of Birth",
@@ -70,7 +68,7 @@ const translations = {
             preferNotToSay: "Prefer not to say"
         },
         bloodGroups: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"],
-        disclaimer: "This information is stored locally on your device. It is not a medical record."
+        disclaimer: "This information is securely stored in the database and linked to your account."
     },
     hi: {
         title: "मेरा स्वास्थ्य प्रोफ़ाइल",
@@ -81,8 +79,6 @@ const translations = {
         saving: "सहेज रहा है...",
         saved: "प्रोफ़ाइल सहेजा गया!",
         back: "डैशबोर्ड पर वापस जाएं",
-        uploadPhoto: "फोटो अपलोड करें",
-        changePhoto: "फोटो बदलें",
         fields: {
             fullName: "पूरा नाम",
             dateOfBirth: "जन्म तिथि",
@@ -117,7 +113,7 @@ const translations = {
             preferNotToSay: "नहीं बताना चाहते"
         },
         bloodGroups: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "अज्ञात"],
-        disclaimer: "यह जानकारी आपके डिवाइस पर स्थानीय रूप से संग्रहीत है। यह चिकित्सा रिकॉर्ड नहीं है।"
+        disclaimer: "यह जानकारी डेटाबेस में सुरक्षित रूप से संग्रहीत है और आपके खाते से जुड़ी है।"
     },
     mr: {
         title: "माझी आरोग्य प्रोफाइल",
@@ -128,8 +124,6 @@ const translations = {
         saving: "जतन करत आहे...",
         saved: "प्रोफाइल जतन केली!",
         back: "डॅशबोर्डवर परत जा",
-        uploadPhoto: "फोटो अपलोड करा",
-        changePhoto: "फोटो बदला",
         fields: {
             fullName: "पूर्ण नाव",
             dateOfBirth: "जन्मतारीख",
@@ -164,7 +158,7 @@ const translations = {
             preferNotToSay: "सांगायचे नाही"
         },
         bloodGroups: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "अज्ञात"],
-        disclaimer: "ही माहिती तुमच्या डिव्हाइसवर स्थानिक पद्धतीने संग्रहित आहे. हे वैद्यकीय रेकॉर्ड नाही."
+        disclaimer: "ही माहिती डेटाबेसमध्ये सुरक्षितपणे संग्रहित आहे आणि तुमच्या खात्याशी जोडलेली आहे."
     },
     ta: {
         title: "எனது சுகாதார விவரம்",
@@ -175,8 +169,6 @@ const translations = {
         saving: "சேமிக்கிறது...",
         saved: "விவரம் சேமிக்கப்பட்டது!",
         back: "டாஷ்போர்டுக்கு திரும்ப",
-        uploadPhoto: "புகைப்படம் பதிவேற்று",
-        changePhoto: "புகைப்படம் மாற்று",
         fields: {
             fullName: "முழு பெயர்",
             dateOfBirth: "பிறந்த தேதி",
@@ -211,7 +203,7 @@ const translations = {
             preferNotToSay: "சொல்ல விரும்பவில்லை"
         },
         bloodGroups: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "தெரியாது"],
-        disclaimer: "இந்த தகவல் உங்கள் சாதனத்தில் உள்ளூரில் சேமிக்கப்படுகிறது. இது மருத்துவ பதிவு அல்ல."
+        disclaimer: "இந்த தகவல் தரவுத்தளத்தில் பாதுகாப்பாக சேமிக்கப்படுகிறது மற்றும் உங்கள் கணக்குடன் இணைக்கப்பட்டுள்ளது."
     },
     te: {
         title: "నా ఆరోగ్య ప్రొఫైల్",
@@ -222,8 +214,6 @@ const translations = {
         saving: "సేవ్ అవుతోంది...",
         saved: "ప్రొఫైల్ సేవ్ అయింది!",
         back: "డాష్‌బోర్డ్‌కు తిరిగి వెళ్ళు",
-        uploadPhoto: "ఫోటో అప్‌లోడ్ చేయి",
-        changePhoto: "ఫోటో మార్చు",
         fields: {
             fullName: "పూర్తి పేరు",
             dateOfBirth: "పుట్టిన తేదీ",
@@ -258,7 +248,7 @@ const translations = {
             preferNotToSay: "చెప్పడం ఇష్టం లేదు"
         },
         bloodGroups: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "తెలియదు"],
-        disclaimer: "ఈ సమాచారం మీ పరికరంలో స్థానికంగా నిల్వ చేయబడుతుంది. ఇది వైద్య రికార్డు కాదు."
+        disclaimer: "ఈ సమాచారం డేటాబేస్‌లో సురక్షితంగా నిల్వ చేయబడుతుంది మరియు మీ ఖాతాకు లింక్ చేయబడుతుంది."
     },
     bn: {
         title: "আমার স্বাস্থ্য প্রোফাইল",
@@ -269,8 +259,6 @@ const translations = {
         saving: "সংরক্ষণ হচ্ছে...",
         saved: "প্রোফাইল সংরক্ষিত!",
         back: "ড্যাশবোর্ডে ফিরে যান",
-        uploadPhoto: "ছবি আপলোড করুন",
-        changePhoto: "ছবি পরিবর্তন করুন",
         fields: {
             fullName: "পুরো নাম",
             dateOfBirth: "জন্ম তারিখ",
@@ -305,7 +293,7 @@ const translations = {
             preferNotToSay: "বলতে চাই না"
         },
         bloodGroups: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "অজানা"],
-        disclaimer: "এই তথ্য আপনার ডিভাইসে স্থানীয়ভাবে সংরক্ষিত। এটি চিকিৎসা রেকর্ড নয়।"
+        disclaimer: "এই তথ্য ডেটাবেসে নিরাপদে সংরক্ষিত এবং আপনার অ্যাকাউন্টের সাথে সংযুক্ত।"
     },
     gu: {
         title: "મારી આરોગ્ય પ્રોફાઇલ",
@@ -316,8 +304,6 @@ const translations = {
         saving: "સાચવી રહ્યું છે...",
         saved: "પ્રોફાઇલ સાચવ્યું!",
         back: "ડેશબોર્ડ પર પાછા જાઓ",
-        uploadPhoto: "ફોટો અપલોડ કરો",
-        changePhoto: "ફોટો બદલો",
         fields: {
             fullName: "પૂરું નામ",
             dateOfBirth: "જન્મ તારીખ",
@@ -352,7 +338,7 @@ const translations = {
             preferNotToSay: "કહેવા માંગતા નથી"
         },
         bloodGroups: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "અજ્ઞાત"],
-        disclaimer: "આ માહિતી તમારા ઉપકરણ પર સ્થાનિક રીતે સંગ્રહિત છે. આ તબીબી રેકોર્ડ નથી."
+        disclaimer: "આ માહિતી ડેટાબેઝમાં સુરક્ષિત રીતે સંગ્રહિત છે અને તમારા ખાતા સાથે જોડાયેલી છે."
     },
     kn: {
         title: "ನನ್ನ ಆರೋಗ್ಯ ಪ್ರೊಫೈಲ್",
@@ -363,8 +349,6 @@ const translations = {
         saving: "ಉಳಿಸಲಾಗುತ್ತಿದೆ...",
         saved: "ಪ್ರೊಫೈಲ್ ಉಳಿಸಲಾಗಿದೆ!",
         back: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗಿ",
-        uploadPhoto: "ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
-        changePhoto: "ಫೋಟೋ ಬದಲಾಯಿಸಿ",
         fields: {
             fullName: "ಪೂರ್ಣ ಹೆಸರು",
             dateOfBirth: "ಹುಟ್ಟಿದ ದಿನಾಂಕ",
@@ -399,28 +383,25 @@ const translations = {
             preferNotToSay: "ಹೇಳಲು ಇಷ್ಟವಿಲ್ಲ"
         },
         bloodGroups: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "ತಿಳಿದಿಲ್ಲ"],
-        disclaimer: "ಈ ಮಾಹಿತಿಯನ್ನು ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಸ್ಥಳೀಯವಾಗಿ ಸಂಗ್ರಹಿಸಲಾಗಿದೆ. ಇದು ವೈದ್ಯಕೀಯ ದಾಖಲೆ ಅಲ್ಲ."
+        disclaimer: "ಈ ಮಾಹಿತಿಯನ್ನು ಡೇಟಾಬೇಸ್‌ನಲ್ಲಿ ಸುರಕ್ಷಿತವಾಗಿ ಸಂಗ್ರಹಿಸಲಾಗಿದೆ ಮತ್ತು ನಿಮ್ಮ ಖಾತೆಗೆ ಲಿಂಕ್ ಮಾಡಲಾಗಿದೆ."
     }
 };
 
-const STORAGE_KEY = 'vaidyaai_profile';
+const API_URL = 'http://localhost:5000/api/profile';
 
 const ProfilePage = () => {
     const navigate = useNavigate();
     const { currentLang } = useLanguage();
-    const { user } = useAuth();
-    const fileInputRef = useRef(null);
+    const { user, token } = useAuth();
 
     const t = translations[currentLang] || translations.en;
 
-    // Profile state with default values
+    // Profile state with default values (no photoUrl, no email — email comes from auth)
     const [profile, setProfile] = useState({
-        photoUrl: '',
         fullName: '',
         dateOfBirth: '',
         gender: '',
         phone: '',
-        email: user?.email || '',
         address: '',
         bloodGroup: '',
         height: '',
@@ -434,18 +415,31 @@ const ProfilePage = () => {
 
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    // Load profile from localStorage on mount
+    // Load profile from database on mount
     useEffect(() => {
-        const savedProfile = localStorage.getItem(STORAGE_KEY);
-        if (savedProfile) {
-            try {
-                setProfile(JSON.parse(savedProfile));
-            } catch (e) {
-                console.error('Error loading profile:', e);
+        const fetchProfile = async () => {
+            if (!token) {
+                setLoading(false);
+                return;
             }
-        }
-    }, []);
+            try {
+                const response = await axios.get(API_URL, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (response.data.success && response.data.profile) {
+                    setProfile(response.data.profile);
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, [token]);
 
     // Handle input changes
     const handleChange = (e) => {
@@ -457,36 +451,34 @@ const ProfilePage = () => {
         setSaved(false);
     };
 
-    // Handle photo upload
-    const handlePhotoUpload = (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfile(prev => ({
-                    ...prev,
-                    photoUrl: reader.result
-                }));
-                setSaved(false);
-            };
-            reader.readAsDataURL(file);
+    // Save profile to database
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const response = await axios.put(API_URL, profile, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (response.data.success) {
+                setSaved(true);
+                setTimeout(() => setSaved(false), 3000);
+            }
+        } catch (error) {
+            console.error('Error saving profile:', error);
+        } finally {
+            setSaving(false);
         }
     };
 
-    // Save profile to localStorage
-    const handleSave = () => {
-        setSaving(true);
-
-        // Simulate save delay
-        setTimeout(() => {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-            setSaving(false);
-            setSaved(true);
-
-            // Reset saved message after 3 seconds
-            setTimeout(() => setSaved(false), 3000);
-        }, 800);
-    };
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-gray-600 font-medium">Loading profile...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50 relative overflow-hidden">
@@ -503,41 +495,6 @@ const ProfilePage = () => {
                 <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold text-gray-800 mb-2">{t.title}</h2>
                     <p className="text-gray-600">{t.subtitle}</p>
-                </div>
-
-                {/* Profile Photo Section */}
-                <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-8 shadow-xl border border-emerald-100 mb-8">
-                    <div className="flex flex-col items-center">
-                        <div className="relative group">
-                            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center overflow-hidden shadow-lg ring-4 ring-emerald-100">
-                                {profile.photoUrl ? (
-                                    <img
-                                        src={profile.photoUrl}
-                                        alt="Profile"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <User className="w-16 h-16 text-white" />
-                                )}
-                            </div>
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                className="absolute bottom-0 right-0 w-10 h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all transform hover:scale-110"
-                            >
-                                <Camera className="w-5 h-5" />
-                            </button>
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handlePhotoUpload}
-                            />
-                        </div>
-                        <p className="mt-4 text-sm text-gray-500">
-                            {profile.photoUrl ? t.changePhoto : t.uploadPhoto}
-                        </p>
-                    </div>
                 </div>
 
                 {/* Personal Information Section */}
@@ -614,7 +571,7 @@ const ProfilePage = () => {
                             </div>
                         </div>
 
-                        {/* Email */}
+                        {/* Email (Read-only, from auth) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">{t.fields.email}</label>
                             <div className="relative">
@@ -622,10 +579,9 @@ const ProfilePage = () => {
                                 <input
                                     type="email"
                                     name="email"
-                                    value={profile.email}
-                                    onChange={handleChange}
-                                    placeholder={t.placeholders.email}
-                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all outline-none"
+                                    value={user?.email || ''}
+                                    readOnly
+                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed outline-none"
                                 />
                             </div>
                         </div>
