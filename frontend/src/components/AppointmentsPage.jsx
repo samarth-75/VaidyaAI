@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import {
     ArrowLeft, Calendar, Clock, MapPin, Star, Phone, User,
     CheckCircle, X, Heart, Stethoscope, Brain, Eye, Bone, Baby,
-    AlertCircle, ChevronRight, Loader, Building2
+    AlertCircle, ChevronRight, Loader, Building2, Navigation, ExternalLink, Bell
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -80,7 +80,11 @@ const translations = {
         locationDenied: "Location access denied. Showing default location.",
         noResults: "No medical facilities found nearby. Try allowing location access.",
         notAvailable: "Not Available", yourLocation: "Your Location",
-        address: "Address", phone: "Phone", type: "Type"
+        address: "Address", phone: "Phone", type: "Type",
+        getDirections: "Get Directions", callNow: "Call", visitWebsite: "Website",
+        setReminder: "Set Reminder", reminderSet: "Reminder Set!",
+        reminderMessage: "Your visit reminder has been saved successfully.",
+        plannedVisits: "Planned Visits"
     },
     hi: {
         title: "डॉक्टर की नियुक्तियां", subtitle: "स्वास्थ्य पेशेवरों के साथ अपॉइंटमेंट खोजें और बुक करें",
@@ -97,7 +101,11 @@ const translations = {
         loadingMap: "आपका स्थान खोज रहे हैं...", loadingDoctors: "पास के डॉक्टर खोज रहे हैं...",
         locationDenied: "स्थान एक्सेस अस्वीकृत। डिफ़ॉल्ट स्थान दिखा रहे हैं।",
         noResults: "पास में कोई चिकित्सा सुविधा नहीं मिली।", notAvailable: "उपलब्ध नहीं",
-        yourLocation: "आपका स्थान", address: "पता", phone: "फ़ोन", type: "प्रकार"
+        yourLocation: "आपका स्थान", address: "पता", phone: "फ़ोन", type: "प्रकार",
+        getDirections: "दिशा-निर्देश", callNow: "कॉल करें", visitWebsite: "वेबसाइट",
+        setReminder: "रिमाइंडर सेट करें", reminderSet: "रिमाइंडर सेट!",
+        reminderMessage: "आपका विज़िट रिमाइंडर सफलतापूर्वक सहेजा गया।",
+        plannedVisits: "नियोजित विज़िट"
     },
     mr: {
         title: "डॉक्टरांच्या भेटी", subtitle: "आरोग्य व्यावसायिकांसोबत भेटी शोधा आणि बुक करा",
@@ -113,7 +121,11 @@ const translations = {
         morning: "सकाळ", afternoon: "दुपार", evening: "संध्याकाळ",
         loadingMap: "तुमचे स्थान शोधत आहे...", loadingDoctors: "जवळचे डॉक्टर शोधत आहे...",
         locationDenied: "स्थान प्रवेश नाकारला.", noResults: "जवळ कोणतीही वैद्यकीय सुविधा सापडली नाही.",
-        notAvailable: "उपलब्ध नाही", yourLocation: "तुमचे स्थान", address: "पत्ता", phone: "फोन", type: "प्रकार"
+        notAvailable: "उपलब्ध नाही", yourLocation: "तुमचे स्थान", address: "पत्ता", phone: "फोन", type: "प्रकार",
+        getDirections: "दिशानिर्देश", callNow: "कॉल करा", visitWebsite: "वेबसाइट",
+        setReminder: "रिमाइंडर सेट करा", reminderSet: "रिमाइंडर सेट!",
+        reminderMessage: "तुमचा भेटीचा रिमाइंडर यशस्वीरित्या सेव झाला.",
+        plannedVisits: "नियोजित भेटी"
     },
     ta: {
         title: "மருத்துவர் சந்திப்புகள்", subtitle: "சுகாதார நிபுணர்களுடன் சந்திப்புகளைக் கண்டுபிடித்து முன்பதிவு செய்யுங்கள்",
@@ -130,7 +142,11 @@ const translations = {
         morning: "காலை", afternoon: "மதியம்", evening: "மாலை",
         loadingMap: "உங்கள் இருப்பிடத்தைப் பெறுகிறது...", loadingDoctors: "அருகிலுள்ள மருத்துவர்களைத் தேடுகிறது...",
         locationDenied: "இருப்பிட அணுகல் மறுக்கப்பட்டது.", noResults: "அருகில் மருத்துவ வசதிகள் எதுவும் கிடைக்கவில்லை.",
-        notAvailable: "கிடைக்கவில்லை", yourLocation: "உங்கள் இருப்பிடம்", address: "முகவரி", phone: "தொலைபேசி", type: "வகை"
+        notAvailable: "கிடைக்கவில்லை", yourLocation: "உங்கள் இருப்பிடம்", address: "முகவரி", phone: "தொலைபேசி", type: "வகை",
+        getDirections: "வழிகாட்டு", callNow: "அழைப்பு", visitWebsite: "வலைதளம்",
+        setReminder: "நினைவூட்டல் அமை", reminderSet: "நினைவூட்டல் அமைக்கப்பட்டது!",
+        reminderMessage: "உங்கள் வருகை நினைவூட்டல் வெற்றிகரமாக சேமிக்கப்பட்டது.",
+        plannedVisits: "திட்டமிட்ட வருகைகள்"
     },
     te: {
         title: "డాక్టర్ అపాయింట్‌మెంట్లు", subtitle: "ఆరోగ్య నిపుణులతో అపాయింట్‌మెంట్లు కనుగొని బుక్ చేయండి",
@@ -146,7 +162,11 @@ const translations = {
         morning: "ఉదయం", afternoon: "మధ్యాహ్నం", evening: "సాయంత్రం",
         loadingMap: "మీ స్థానాన్ని పొందుతోంది...", loadingDoctors: "సమీపంలోని డాక్టర్లను శోధిస్తోంది...",
         locationDenied: "స్థానం యాక్సెస్ నిరాకరించబడింది.", noResults: "సమీపంలో వైద్య సౌకర్యాలు కనుగొనబడలేదు.",
-        notAvailable: "అందుబాటులో లేదు", yourLocation: "మీ స్థానం", address: "చిరునామా", phone: "ఫోన్", type: "రకం"
+        notAvailable: "అందుబాటులో లేదు", yourLocation: "మీ స్థానం", address: "చిరునామా", phone: "ఫోన్", type: "రకం",
+        getDirections: "దిశలు", callNow: "కాల్ చేయండి", visitWebsite: "వెబ్‌సైట్",
+        setReminder: "రిమైండర్ సెట్ చేయండి", reminderSet: "రిమైండర్ సెట్!",
+        reminderMessage: "మీ సందర్శన రిమైండర్ విజయవంతంగా సేవ్ చేయబడింది.",
+        plannedVisits: "ప్లాన్ చేసిన సందర్శనలు"
     },
     bn: {
         title: "ডাক্তার অ্যাপয়েন্টমেন্ট", subtitle: "স্বাস্থ্য পেশাদারদের সাথে অ্যাপয়েন্টমেন্ট খুঁজুন এবং বুক করুন",
@@ -162,7 +182,11 @@ const translations = {
         morning: "সকাল", afternoon: "দুপুর", evening: "সন্ধ্যা",
         loadingMap: "আপনার অবস্থান পাওয়া যাচ্ছে...", loadingDoctors: "কাছের ডাক্তার খোঁজা হচ্ছে...",
         locationDenied: "অবস্থান অ্যাক্সেস প্রত্যাখ্যান।", noResults: "কাছে কোনো চিকিৎসা সুবিধা পাওয়া যায়নি।",
-        notAvailable: "উপলব্ধ নয়", yourLocation: "আপনার অবস্থান", address: "ঠিকানা", phone: "ফোন", type: "ধরন"
+        notAvailable: "উপলব্ধ নয়", yourLocation: "আপনার অবস্থান", address: "ঠিকানা", phone: "ফোন", type: "ধরন",
+        getDirections: "দিকনির্দেশ", callNow: "কল করুন", visitWebsite: "ওয়েবসাইট",
+        setReminder: "রিমাইন্ডার সেট করুন", reminderSet: "রিমাইন্ডার সেট!",
+        reminderMessage: "আপনার ভিজিট রিমাইন্ডার সফলভাবে সংরক্ষিত হয়েছে।",
+        plannedVisits: "পরিকল্পিত ভিজিট"
     },
     gu: {
         title: "ડૉક્ટર એપોઇન્ટમેન્ટ્સ", subtitle: "આરોગ્ય વ્યાવસાયિકો સાથે એપોઇન્ટમેન્ટ્સ શોધો અને બુક કરો",
@@ -178,7 +202,11 @@ const translations = {
         morning: "સવાર", afternoon: "બપોર", evening: "સાંજ",
         loadingMap: "તમારું સ્થાન મેળવી રહ્યા છે...", loadingDoctors: "નજીકના ડૉક્ટરો શોધી રહ્યા છે...",
         locationDenied: "સ્થાન ઍક્સેસ નકારવામાં આવ્યું.", noResults: "નજીકમાં કોઈ તબીબી સુવિધા મળી નથી.",
-        notAvailable: "ઉપલબ્ધ નથી", yourLocation: "તમારું સ્થાન", address: "સરનામું", phone: "ફોન", type: "પ્રકાર"
+        notAvailable: "ઉપલબ્ધ નથી", yourLocation: "તમારું સ્થાન", address: "સરનામું", phone: "ફોન", type: "પ્રકાર",
+        getDirections: "દિશાઓ", callNow: "કૉલ કરો", visitWebsite: "વેબસાઇટ",
+        setReminder: "રિમાઇન્ડર સેટ કરો", reminderSet: "રિમાઇન્ડર સેટ!",
+        reminderMessage: "તમારો મુલાકાત રિમાઇન્ડર સફળતાપૂર્વક સાચવવામાં આવ્યો.",
+        plannedVisits: "આયોજિત મુલાકાતો"
     },
     kn: {
         title: "ವೈದ್ಯರ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳು", subtitle: "ಆರೋಗ್ಯ ವೃತ್ತಿಪರರೊಂದಿಗೆ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳನ್ನು ಹುಡುಕಿ ಮತ್ತು ಬುಕ್ ಮಾಡಿ",
@@ -194,7 +222,11 @@ const translations = {
         morning: "ಬೆಳಿಗ್ಗೆ", afternoon: "ಮಧ್ಯಾಹ್ನ", evening: "ಸಂಜೆ",
         loadingMap: "ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ...", loadingDoctors: "ಹತ್ತಿರದ ವೈದ್ಯರನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ...",
         locationDenied: "ಸ್ಥಳ ಪ್ರವೇಶ ನಿರಾಕರಿಸಲಾಗಿದೆ.", noResults: "ಹತ್ತಿರ ಯಾವುದೇ ವೈದ್ಯಕೀಯ ಸೌಲಭ್ಯ ಕಂಡುಬಂದಿಲ್ಲ.",
-        notAvailable: "ಲಭ್ಯವಿಲ್ಲ", yourLocation: "ನಿಮ್ಮ ಸ್ಥಳ", address: "ವಿಳಾಸ", phone: "ಫೋನ್", type: "ವಿಧ"
+        notAvailable: "ಲಭ್ಯವಿಲ್ಲ", yourLocation: "ನಿಮ್ಮ ಸ್ಥಳ", address: "ವಿಳಾಸ", phone: "ಫೋನ್", type: "ವಿಧ",
+        getDirections: "ದಿಕ್ಕುಗಳು", callNow: "ಕರೆ ಮಾಡಿ", visitWebsite: "ವೆಬ್‌ಸೈಟ್",
+        setReminder: "ರಿಮೈಂಡರ್ ಹೊಂದಿಸಿ", reminderSet: "ರಿಮೈಂಡರ್ ಹೊಂದಿಸಲಾಗಿದೆ!",
+        reminderMessage: "ನಿಮ್ಮ ಭೇಟಿ ರಿಮೈಂಡರ್ ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ.",
+        plannedVisits: "ಯೋಜಿತ ಭೇಟಿಗಳು"
     }
 };
 
@@ -388,7 +420,7 @@ const AppointmentsPage = () => {
                     </button>
                     <button onClick={() => setActiveTab('appointments')}
                         className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${activeTab === 'appointments' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-600 hover:bg-emerald-50'}`}>
-                        {t.myAppointments}
+                        {t.plannedVisits}
                         {appointments.filter(a => a.status === 'upcoming').length > 0 && (
                             <span className="w-6 h-6 bg-rose-500 text-white text-xs rounded-full flex items-center justify-center">
                                 {appointments.filter(a => a.status === 'upcoming').length}
@@ -468,26 +500,44 @@ const AppointmentsPage = () => {
                                             </div>
 
                                             <div className="space-y-2 mb-4">
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <MapPin className="w-4 h-4 flex-shrink-0" />
-                                                    <span className="truncate">{doctor.location || t.notAvailable}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <Phone className="w-4 h-4 flex-shrink-0" />
-                                                    <span>{doctor.phone || t.notAvailable}</span>
-                                                </div>
-                                                {doctor.website && (
-                                                    <div className="flex items-center gap-2 text-sm text-emerald-600">
-                                                        <ChevronRight className="w-4 h-4 flex-shrink-0" />
-                                                        <a href={doctor.website} target="_blank" rel="noopener noreferrer" className="truncate hover:underline">{doctor.website}</a>
+                                                {doctor.location && (
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                                                        <span className="truncate">{doctor.location}</span>
+                                                    </div>
+                                                )}
+                                                {doctor.phone && (
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                        <Phone className="w-4 h-4 flex-shrink-0" />
+                                                        <span>{doctor.phone}</span>
                                                     </div>
                                                 )}
                                             </div>
 
+                                            {/* Smart Action Panel */}
+                                            <div className="flex gap-2 mb-2">
+                                                <button onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${doctor.lat},${doctor.lng}`, '_blank')}
+                                                    className="flex-1 py-2.5 rounded-xl font-medium transition-all flex items-center justify-center gap-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-md text-sm">
+                                                    <Navigation className="w-4 h-4" />
+                                                    {t.getDirections}
+                                                </button>
+                                                {doctor.phone && (
+                                                    <a href={`tel:${doctor.phone}`}
+                                                        className="py-2.5 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-1 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-md text-sm">
+                                                        <Phone className="w-4 h-4" />
+                                                    </a>
+                                                )}
+                                                {doctor.website && (
+                                                    <a href={doctor.website} target="_blank" rel="noopener noreferrer"
+                                                        className="py-2.5 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md text-sm">
+                                                        <ExternalLink className="w-4 h-4" />
+                                                    </a>
+                                                )}
+                                            </div>
                                             <button onClick={() => handleBookClick(doctor)}
-                                                className="w-full py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-lg">
-                                                <Calendar className="w-4 h-4" />
-                                                {t.bookNow}
+                                                className="w-full py-2.5 rounded-xl font-medium transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md text-sm">
+                                                <Bell className="w-4 h-4" />
+                                                {t.setReminder}
                                             </button>
                                         </div>
                                     );
@@ -555,14 +605,14 @@ const AppointmentsPage = () => {
                 </div>
             </main>
 
-            {/* Booking Modal */}
+            {/* Visit Reminder Modal */}
             {showBookingModal && selectedDoctor && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
                         {!bookingSuccess ? (
                             <>
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xl font-bold text-gray-800">{t.bookNow}</h3>
+                                    <h3 className="text-xl font-bold text-gray-800">{t.setReminder}</h3>
                                     <button onClick={() => setShowBookingModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                                         <X className="w-5 h-5" />
                                     </button>
@@ -618,11 +668,11 @@ const AppointmentsPage = () => {
                             </>
                         ) : (
                             <div className="text-center py-8">
-                                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <CheckCircle className="w-10 h-10 text-emerald-600" />
+                                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Bell className="w-10 h-10 text-amber-600" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-gray-800 mb-2">{t.bookingConfirmed}</h3>
-                                <p className="text-gray-600 mb-6">{t.bookingMessage}</p>
+                                <h3 className="text-2xl font-bold text-gray-800 mb-2">{t.reminderSet}</h3>
+                                <p className="text-gray-600 mb-6">{t.reminderMessage}</p>
                                 <div className="bg-emerald-50 rounded-2xl p-4 mb-6 text-left">
                                     <p className="font-medium text-gray-800">{selectedDoctor.name || t.notAvailable}</p>
                                     <p className="text-sm text-emerald-600">{selectedDoctor.specialty}</p>
@@ -633,7 +683,7 @@ const AppointmentsPage = () => {
                                 </div>
                                 <button onClick={() => { setShowBookingModal(false); setActiveTab('appointments'); }}
                                     className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all">
-                                    {t.myAppointments}
+                                    {t.plannedVisits}
                                 </button>
                             </div>
                         )}
