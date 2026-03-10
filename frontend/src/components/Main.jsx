@@ -395,52 +395,60 @@ const VaidyaAIApp = () => {
     setUploadedFiles(uploadedFiles.filter(f => f.id !== id));
   };
 
-  const analyzeReports = () => {
+  // Icon map for mapping API iconName strings to lucide-react components
+  const remedyIconMap = { Leaf, Activity, Heart, Pill };
+
+  const analyzeReports = async () => {
     if (uploadedFiles.length === 0) return;
 
     setAnalyzing(true);
     setAnalysisComplete(false);
+    setOutput(null);
+    setRemedies([]);
 
-    // Simulate AI analysis
-    setTimeout(() => {
-      setAnalyzing(false);
-      setAnalysisComplete(true);
-      setOutput({
-        summary: "Your blood test results show slightly elevated cholesterol levels (220 mg/dL) and vitamin D deficiency (18 ng/mL). Your hemoglobin levels are normal at 14.2 g/dL. Liver function tests are within normal range.",
-        findings: [
-          { label: "Total Cholesterol", value: "220 mg/dL", status: "elevated", normal: "< 200 mg/dL" },
-          { label: "Vitamin D", value: "18 ng/mL", status: "low", normal: "30-100 ng/mL" },
-          { label: "Hemoglobin", value: "14.2 g/dL", status: "normal", normal: "13.5-17.5 g/dL" },
-          { label: "Liver Enzymes", value: "Normal", status: "normal", normal: "Within range" }
-        ]
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', uploadedFiles[0].file);
+      formData.append('language', currentLang);
+
+      const response = await fetch('http://localhost:5000/api/report/analyze', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
       });
-      setRemedies([
-        {
-          icon: Leaf,
-          title: "Dietary Changes",
-          description: "Reduce saturated fats. Include more fiber-rich foods like oats, beans, and vegetables. Add fatty fish (salmon, mackerel) twice weekly.",
-          priority: "high"
-        },
-        {
-          icon: Activity,
-          title: "Exercise Routine",
-          description: "30 minutes of moderate cardio 5 times per week. Include walking, jogging, or cycling to help lower cholesterol naturally.",
-          priority: "high"
-        },
-        {
-          icon: Pill,
-          title: "Vitamin D Supplementation",
-          description: "Take Vitamin D3 supplement (2000 IU daily) with a meal containing healthy fats for better absorption. Get 15-20 minutes of sunlight daily.",
-          priority: "medium"
-        },
-        {
-          icon: Heart,
-          title: "Lifestyle Modifications",
-          description: "Maintain healthy weight, reduce stress through yoga or meditation, ensure 7-8 hours of quality sleep, and avoid smoking.",
-          priority: "medium"
-        }
-      ]);
-    }, 3000);
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Analysis failed');
+      }
+
+      const analysis = data.analysis;
+
+      setOutput({
+        summary: analysis.summary,
+        findings: analysis.findings
+      });
+
+      setRemedies(
+        analysis.remedies.map((r) => ({
+          icon: remedyIconMap[r.iconName] || Leaf,
+          title: r.title,
+          description: r.description,
+          priority: r.priority
+        }))
+      );
+
+      setAnalysisComplete(true);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      alert(error.message || 'Failed to analyze the report. Please try again.');
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   const sidebarItems = [
