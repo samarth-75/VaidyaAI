@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import axios from 'axios';
 import {
     ArrowLeft,
     Calendar,
@@ -364,32 +365,37 @@ const HistoryPage = () => {
     const [appointments, setAppointments] = useState([]);
     const [expandedReports, setExpandedReports] = useState({});
 
-    // Load from localStorage or use demo data
+    // Load from backend or use demo data
     useEffect(() => {
-        const savedReports = localStorage.getItem('vaidyaai_report_history');
-        const savedAppointments = localStorage.getItem('vaidyaai_appointments');
-
-        if (savedReports) {
+        const fetchHistory = async () => {
             try {
-                const parsed = JSON.parse(savedReports);
-                // Restore icon references from string names
-                const restored = parsed.map(r => ({
-                    ...r,
-                    icon: reportIconMap[r.iconName] || FileText,
-                    abnormalValues: r.abnormalValues || [],
-                    remedies: (r.remedies || []).map(rem => ({
-                        ...rem,
-                        icon: remedyIconMap[rem.iconName] || Leaf
-                    }))
-                }));
-                setReports(restored.length > 0 ? restored : demoReports);
-            } catch {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://localhost:5000/api/report/history', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (response.data.success && response.data.history) {
+                    const restored = response.data.history.map(r => ({
+                        ...r,
+                        icon: reportIconMap[r.iconName] || FileText,
+                        abnormalValues: r.abnormalValues || [],
+                        remedies: (r.remedies || []).map(rem => ({
+                            ...rem,
+                            icon: remedyIconMap[rem.iconName] || Leaf
+                        }))
+                    }));
+                    setReports(restored.length > 0 ? restored : demoReports);
+                } else {
+                    setReports(demoReports);
+                }
+            } catch (error) {
+                console.error("Failed to fetch report history:", error);
                 setReports(demoReports);
             }
-        } else {
-            setReports(demoReports);
-        }
+        };
 
+        fetchHistory();
+
+        const savedAppointments = localStorage.getItem('vaidyaai_appointments');
         if (savedAppointments) {
             try {
                 const parsed = JSON.parse(savedAppointments);

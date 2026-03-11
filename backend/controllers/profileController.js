@@ -26,7 +26,8 @@ export const getProfile = async (req, res) => {
                     medications: '',
                     conditions: '',
                     emergencyContact: '',
-                    emergencyPhone: ''
+                    emergencyPhone: '',
+                    privacyOptOut: false
                 }
             });
         }
@@ -46,7 +47,8 @@ export const getProfile = async (req, res) => {
                 medications: profile.medications,
                 conditions: profile.conditions,
                 emergencyContact: profile.emergencyContact,
-                emergencyPhone: profile.emergencyPhone
+                emergencyPhone: profile.emergencyPhone,
+                privacyOptOut: profile.privacyOptOut
             }
         });
     } catch (error) {
@@ -76,7 +78,8 @@ export const saveProfile = async (req, res) => {
             medications,
             conditions,
             emergencyContact,
-            emergencyPhone
+            emergencyPhone,
+            privacyOptOut
         } = req.body;
 
         const profileData = {
@@ -92,7 +95,8 @@ export const saveProfile = async (req, res) => {
             medications: medications || '',
             conditions: conditions || '',
             emergencyContact: emergencyContact || '',
-            emergencyPhone: emergencyPhone || ''
+            emergencyPhone: emergencyPhone || '',
+            privacyOptOut: privacyOptOut === undefined ? false : privacyOptOut
         };
 
         // Upsert: create if not exists, update if exists
@@ -117,7 +121,8 @@ export const saveProfile = async (req, res) => {
                 medications: profile.medications,
                 conditions: profile.conditions,
                 emergencyContact: profile.emergencyContact,
-                emergencyPhone: profile.emergencyPhone
+                emergencyPhone: profile.emergencyPhone,
+                privacyOptOut: profile.privacyOptOut
             }
         });
     } catch (error) {

@@ -2,6 +2,8 @@ import { InferenceClient } from '@huggingface/inference';
 import multer from 'multer';
 import mammoth from 'mammoth';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import Profile from '../models/Profile.js';
+import ReportHistory from '../models/ReportHistory.js';
 
 // ─── Multer config (in-memory, max 10 MB) ──────────────────────────────────
 const storage = multer.memoryStorage();
@@ -54,8 +56,10 @@ const languageNames = {
 };
 
 // ─── Build the analysis prompt ──────────────────────────────────────────────
-function buildPrompt(langName, content) {
-    return `You are VaidyaAI, an expert medical report analyzer. Analyze the following medical report and return a JSON response.
+function buildPrompt(langName, content, context = '') {
+    const contextPrompt = context ? `\n\nPATIENT HEALTH CONTEXT (take these into account when analyzing and suggesting lifestyle remedies):\n${context}` : '';
+
+    return `You are VaidyaAI, an expert medical report analyzer. Analyze the following medical report and return a JSON response.${contextPrompt}
 
 IMPORTANT RULES:
 1. Respond ENTIRELY in ${langName} language.
@@ -112,7 +116,24 @@ export const analyzeReport = async (req, res) => {
 
         const language = req.body.language || 'en';
         const langName = languageNames[language] || 'English';
+        const useProfile = req.body.useProfile !== 'false';
         const mime = req.file.mimetype;
+
+        let profileContext = '';
+        if (useProfile && req.user && req.user._id) {
+            try {
+                const profile = await Profile.findOne({ userId: req.user._id });
+                if (profile && !profile.privacyOptOut) {
+                    const parts = [];
+                    if (profile.conditions) parts.push(`Pre-existing conditions: ${profile.conditions}`);
+                    if (profile.allergies) parts.push(`Allergies: ${profile.allergies}`);
+                    if (profile.medications) parts.push(`Current medications: ${profile.medications}`);
+                    if (parts.length > 0) profileContext = parts.join(' | ');
+                }
+            } catch (err) {
+                console.error("Error fetching profile for context:", err);
+            }
+        }
 
         console.log(`📄 Analyzing file: ${req.file.originalname} (${mime}, ${(req.file.size / 1024).toFixed(1)} KB)`);
 
@@ -140,7 +161,7 @@ export const analyzeReport = async (req, res) => {
                         },
                         {
                             type: 'text',
-                            text: buildPrompt(langName, 'See the medical report image above.')
+                            text: buildPrompt(langName, 'See the medical report image above.', profileContext)
                         }
                     ]
                 }
@@ -152,7 +173,7 @@ export const analyzeReport = async (req, res) => {
                 max_tokens: 2048
             });
 
-            return processHFResponse(result, res);
+            return processHFResponse(result, res, req.user._id);
 
         } else if (mime === 'application/pdf') {
             // ── PDF: Extract text with pdf.js ──
@@ -176,7 +197,7 @@ export const analyzeReport = async (req, res) => {
             messages = [
                 {
                     role: 'user',
-                    content: buildPrompt(langName, pdfText)
+                    content: buildPrompt(langName, pdfText, profileContext)
                 }
             ];
 
@@ -186,7 +207,7 @@ export const analyzeReport = async (req, res) => {
                 max_tokens: 2048
             });
 
-            return processHFResponse(result, res);
+            return processHFResponse(result, res, req.user._id);
 
         } else {
             // ── DOC/DOCX: Extract text with mammoth ──
@@ -215,7 +236,7 @@ export const analyzeReport = async (req, res) => {
             messages = [
                 {
                     role: 'user',
-                    content: buildPrompt(langName, docText)
+                    content: buildPrompt(langName, docText, profileContext)
                 }
             ];
 
@@ -225,7 +246,7 @@ export const analyzeReport = async (req, res) => {
                 max_tokens: 2048
             });
 
-            return processHFResponse(result, res);
+            return processHFResponse(result, res, req.user._id);
         }
 
     } catch (error) {
@@ -239,7 +260,7 @@ export const analyzeReport = async (req, res) => {
 };
 
 // ─── Process HF response and send to client ────────────────────────────────
-function processHFResponse(result, res) {
+async function processHFResponse(result, res, userId) {
     let responseText = result.choices?.[0]?.message?.content || '';
     console.log('🤖 HF raw response length:', responseText.length);
 
@@ -284,8 +305,49 @@ function processHFResponse(result, res) {
 
     console.log(`✅ Analysis complete: ${safeAnalysis.findings.length} findings, ${safeAnalysis.remedies.length} remedies`);
 
+    try {
+        if (userId) {
+            const reportHistory = new ReportHistory({
+                userId,
+                type: 'Medical Report',
+                summary: safeAnalysis.summary,
+                abnormalValues: safeAnalysis.findings.map(f => ({
+                    name: f.label,
+                    value: f.value,
+                    status: f.status,
+                    normal: f.normal
+                })),
+                remedies: safeAnalysis.remedies
+            });
+            await reportHistory.save();
+        }
+    } catch (saveErr) {
+        console.error("Error saving report history:", saveErr);
+        // Do not return error, still serve the response
+    }
+
     return res.status(200).json({
         success: true,
         analysis: safeAnalysis
     });
 }
+
+// ─── Get Report History ──────────────────────────────────────────────────────
+export const getHistory = async (req, res) => {
+    try {
+        const history = await ReportHistory.find({ userId: req.user._id })
+            .sort({ date: -1 }) // Newest first
+            .lean(); // Use lean for better performance
+
+        res.status(200).json({
+            success: true,
+            history
+        });
+    } catch (error) {
+        console.error('❌ Failed to fetch report history:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching report history.'
+        });
+    }
+};

@@ -18,7 +18,8 @@ const profileSchema = new mongoose.Schema({
     medications: { type: String, default: '' },
     conditions: { type: String, default: '' },
     emergencyContact: { type: String, default: '' },
-    emergencyPhone: { type: String, default: '' }
+    emergencyPhone: { type: String, default: '' },
+    privacyOptOut: { type: Boolean, default: false }
 }, {
     timestamps: true
 });

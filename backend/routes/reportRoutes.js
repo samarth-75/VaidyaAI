@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import { analyzeReport, upload } from '../controllers/reportController.js';
+import { analyzeReport, getHistory, upload } from '../controllers/reportController.js';
 
 const router = express.Router();
 
@@ -8,5 +8,9 @@ const router = express.Router();
 // Protected route — requires JWT token
 // Accepts a single file upload (field name: "file")
 router.post('/analyze', protect, upload.single('file'), analyzeReport);
+
+// GET /api/report/history
+// Protected route — fetches user's past analyzed reports
+router.get('/history', protect, getHistory);
 
 export default router;
