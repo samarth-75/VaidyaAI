@@ -7,6 +7,7 @@ import AppointmentsPage from "./AppointmentsPage";
 import HistoryPage from "./HistoryPage";
 import SettingsPage from "./SettingsPage";
 import TextToSpeech from "./TextToSpeech";
+import VaidyaGuideChatbot from "./VaidyaGuideChatbot";
 import {
   Upload,
   FileText,
@@ -841,6 +842,9 @@ const VaidyaAIApp = () => {
           opacity: 0;
         }
       `}</style>
+
+      {/* Guidance Chatbot */}
+      <VaidyaGuideChatbot currentLang={currentLang} currentPage={activePage} isLoggedIn={!!user} />
 
       {/* Disclaimer Popup */}
       {showDisclaimer && (
