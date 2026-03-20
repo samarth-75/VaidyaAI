@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -6,6 +6,7 @@ import ProfilePage from "./ProfilePage";
 import AppointmentsPage from "./AppointmentsPage";
 import HistoryPage from "./HistoryPage";
 import SettingsPage from "./SettingsPage";
+import TextToSpeech from "./TextToSpeech";
 import {
   Upload,
   FileText,
@@ -601,6 +602,16 @@ const VaidyaAIApp = () => {
                       <div className="bg-emerald-50 border-l-4 border-emerald-500 p-6 rounded-lg">
                         <h3 className="font-bold text-emerald-900 mb-3 text-lg">{t.summary}</h3>
                         <p className="text-gray-700 leading-relaxed">{output.summary}</p>
+
+                        {/* Audio Explanation */}
+                        <TextToSpeech
+                          text={[
+                            output.summary,
+                            ...output.findings.map(f => `${f.label}: ${f.value}`),
+                            ...remedies.map(r => `${r.title}. ${r.description}`)
+                          ].join('. ')}
+                          currentLang={currentLang}
+                        />
                       </div>
 
                       <div className="space-y-3">

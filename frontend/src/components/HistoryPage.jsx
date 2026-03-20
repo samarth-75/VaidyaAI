@@ -21,7 +21,8 @@ import {
     Brain,
     Eye,
     Bone,
-    Baby
+    Baby,
+    Trash2
 } from 'lucide-react';
 
 // Icon lookup maps for restoring icons from localStorage
@@ -66,7 +67,11 @@ const translations = {
         cancelled: "Cancelled",
         today: "Today",
         yesterday: "Yesterday",
-        daysAgo: "days ago"
+        daysAgo: "days ago",
+        deleteBtn: "Delete",
+        deleteConfirm: "Are you sure you want to delete this report?",
+        deleteCancel: "Cancel",
+        deleteYes: "Yes, Delete"
     },
     hi: {
         title: "स्वास्थ्य इतिहास",
@@ -86,7 +91,11 @@ const translations = {
         cancelled: "रद्द",
         today: "आज",
         yesterday: "कल",
-        daysAgo: "दिन पहले"
+        daysAgo: "दिन पहले",
+        deleteBtn: "हटाएं",
+        deleteConfirm: "क्या आप वाकई इस रिपोर्ट को हटाना चाहते हैं?",
+        deleteCancel: "रद्द करें",
+        deleteYes: "हाँ, हटाएं"
     },
     mr: {
         title: "आरोग्य इतिहास",
@@ -106,7 +115,11 @@ const translations = {
         cancelled: "रद्द",
         today: "आज",
         yesterday: "काल",
-        daysAgo: "दिवसांपूर्वी"
+        daysAgo: "दिवसांपूर्वी",
+        deleteBtn: "हटवा",
+        deleteConfirm: "तुम्हाला खात्री आहे की तुम्हाला हा अहवाल हटवायचा आहे?",
+        deleteCancel: "रद्द करा",
+        deleteYes: "होय, हटवा"
     },
     ta: {
         title: "சுகாதார வரலாறு",
@@ -126,7 +139,11 @@ const translations = {
         cancelled: "ரத்து",
         today: "இன்று",
         yesterday: "நேற்று",
-        daysAgo: "நாட்களுக்கு முன்பு"
+        daysAgo: "நாட்களுக்கு முன்பு",
+        deleteBtn: "நீக்கு",
+        deleteConfirm: "இந்த அறிக்கையை நீக்க விரும்புகிறீர்களா?",
+        deleteCancel: "ரத்து செய்",
+        deleteYes: "ஆம், நீக்கு"
     },
     te: {
         title: "ఆరోగ్య చరిత్ర",
@@ -146,7 +163,11 @@ const translations = {
         cancelled: "రద్దు",
         today: "ఈ రోజు",
         yesterday: "నిన్న",
-        daysAgo: "రోజుల క్రితం"
+        daysAgo: "రోజుల క్రితం",
+        deleteBtn: "తొలగించు",
+        deleteConfirm: "మీరు ఈ నివేదికను తొలగించాలనుకుంటున్నారా?",
+        deleteCancel: "రద్దు",
+        deleteYes: "అవును, తొలగించు"
     },
     bn: {
         title: "স্বাস্থ্য ইতিহাস",
@@ -166,7 +187,11 @@ const translations = {
         cancelled: "বাতিল",
         today: "আজ",
         yesterday: "গতকাল",
-        daysAgo: "দিন আগে"
+        daysAgo: "দিন আগে",
+        deleteBtn: "মুছুন",
+        deleteConfirm: "আপনি কি এই রিপোর্টটি মুছে ফেলতে চান?",
+        deleteCancel: "বাতিল",
+        deleteYes: "হ্যাঁ, মুছুন"
     },
     gu: {
         title: "આરોગ્ય ઇતિહાસ",
@@ -186,7 +211,11 @@ const translations = {
         cancelled: "રદ",
         today: "આજે",
         yesterday: "ગઈકાલે",
-        daysAgo: "દિવસ પહેલા"
+        daysAgo: "દિવસ પહેલા",
+        deleteBtn: "કાઢી નાખો",
+        deleteConfirm: "શું તમે ખરેખર આ રિપોર્ટ કાઢી નાખવા માંગો છો?",
+        deleteCancel: "રદ કરો",
+        deleteYes: "હા, કાઢી નાખો"
     },
     kn: {
         title: "ಆರೋಗ್ಯ ಇತಿಹಾಸ",
@@ -206,7 +235,11 @@ const translations = {
         cancelled: "ರದ್ದುಮಾಡಲಾಗಿದೆ",
         today: "ಇಂದು",
         yesterday: "ನಿನ್ನೆ",
-        daysAgo: "ದಿನಗಳ ಹಿಂದೆ"
+        daysAgo: "ದಿನಗಳ ಹಿಂದೆ",
+        deleteBtn: "ಅಳಿಸಿ",
+        deleteConfirm: "ನೀವು ಈ ವರದಿಯನ್ನು ಅಳಿಸಲು ಖಚಿತವಾಗಿದ್ದೀರಾ?",
+        deleteCancel: "ರದ್ದುಮಾಡಿ",
+        deleteYes: "ಹೌದು, ಅಳಿಸಿ"
     }
 };
 
@@ -364,6 +397,7 @@ const HistoryPage = () => {
     const [reports, setReports] = useState([]);
     const [appointments, setAppointments] = useState([]);
     const [expandedReports, setExpandedReports] = useState({});
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
     // Load from backend or use demo data
     useEffect(() => {
@@ -417,6 +451,20 @@ const HistoryPage = () => {
             ...prev,
             [id]: !prev[id]
         }));
+    };
+
+    const handleDeleteReport = async (reportId) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:5000/api/report/history/${reportId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setReports(prev => prev.filter(r => r._id !== reportId && r.id !== reportId));
+            setDeleteConfirmId(null);
+        } catch (error) {
+            console.error('Failed to delete report:', error);
+            setDeleteConfirmId(null);
+        }
     };
 
     const formatDate = (dateStr) => {
@@ -510,18 +558,29 @@ const HistoryPage = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Status Indicator */}
-                                                {(report.abnormalValues || []).length > 0 ? (
-                                                    <div className="flex items-center gap-1 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm">
-                                                        <AlertTriangle className="w-4 h-4" />
-                                                        <span>{report.abnormalValues.length}</span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-1 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-sm">
-                                                        <CheckCircle className="w-4 h-4" />
-                                                        <span>Normal</span>
-                                                    </div>
-                                                )}
+                                                <div className="flex items-center gap-2">
+                                                    {/* Delete Button */}
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(report._id || report.id); }}
+                                                        className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
+                                                        title={t.deleteBtn}
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
+
+                                                    {/* Status Indicator */}
+                                                    {(report.abnormalValues || []).length > 0 ? (
+                                                        <div className="flex items-center gap-1 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm">
+                                                            <AlertTriangle className="w-4 h-4" />
+                                                            <span>{report.abnormalValues.length}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-1 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-sm">
+                                                            <CheckCircle className="w-4 h-4" />
+                                                            <span>Normal</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {/* Summary */}
@@ -653,6 +712,37 @@ const HistoryPage = () => {
                     )}
                 </section>
             </main>
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirmId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden animate-fadeIn">
+                        <div className="bg-gradient-to-r from-red-500 to-rose-500 p-5 flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                <Trash2 className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-lg font-bold text-white">{t.deleteBtn}</h3>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-gray-700 dark:text-gray-300 mb-6">{t.deleteConfirm}</p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setDeleteConfirmId(null)}
+                                    className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                >
+                                    {t.deleteCancel}
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteReport(deleteConfirmId)}
+                                    className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300"
+                                >
+                                    {t.deleteYes}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* CSS for animations */}
             <style>{`

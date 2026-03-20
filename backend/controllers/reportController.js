@@ -69,7 +69,7 @@ IMPORTANT RULES:
 
 The JSON must follow this exact structure:
 {
-  "summary": "A 2-3 sentence plain-language summary of the report findings",
+  "summary": "A detailed 4-5 sentence plain-language summary of the report findings. Cover what the report is about, key observations, what is normal, what is abnormal, and an overall health impression",
   "findings": [
     {
       "label": "Test/Parameter name",
@@ -348,6 +348,34 @@ export const getHistory = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Server error while fetching report history.'
+        });
+    }
+};
+
+// ─── Delete a Report ─────────────────────────────────────────────────────────
+export const deleteReport = async (req, res) => {
+    try {
+        const report = await ReportHistory.findOneAndDelete({
+            _id: req.params.id,
+            userId: req.user._id
+        });
+
+        if (!report) {
+            return res.status(404).json({
+                success: false,
+                message: 'Report not found or you do not have permission to delete it.'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Report deleted successfully.'
+        });
+    } catch (error) {
+        console.error('❌ Failed to delete report:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while deleting report.'
         });
     }
 };
