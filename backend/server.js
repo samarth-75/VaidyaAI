@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import helmet from 'helmet';
 import authRoutes from './routes/authRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
@@ -13,13 +14,16 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
-// Middleware
+// ─── Security Middleware ────────────────────────────────────────────────────
+app.use(helmet());                              // Security headers
+app.use(express.json({ limit: '1mb' }));        // Body size limit
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// ─── CORS ───────────────────────────────────────────────────────────────────
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Connect to MongoDB
 const connectDB = async () => {
@@ -62,8 +66,7 @@ app.use((err, req, res, next) => {
     console.error('Server Error:', err);
     res.status(err.status || 500).json({
         success: false,
-        message: err.message || 'Internal server error',
-        error: process.env.NODE_ENV === 'development' ? err : {}
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
     });
 });
 

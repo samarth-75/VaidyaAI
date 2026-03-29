@@ -404,7 +404,7 @@ const HistoryPage = () => {
         const fetchHistory = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:5000/api/report/history', {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/report/history`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (response.data.success && response.data.history) {
@@ -456,7 +456,7 @@ const HistoryPage = () => {
     const handleDeleteReport = async (reportId) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/report/history/${reportId}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/report/history/${reportId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setReports(prev => prev.filter(r => r._id !== reportId && r.id !== reportId));

@@ -414,7 +414,7 @@ const VaidyaAIApp = () => {
       formData.append('file', uploadedFiles[0].file);
       formData.append('language', currentLang);
 
-      const response = await fetch('http://localhost:5000/api/report/analyze', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/report/analyze`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

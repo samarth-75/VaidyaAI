@@ -87,7 +87,7 @@ const TextToSpeech = ({ text, currentLang = 'en' }) => {
     setStatus('loading');
 
     try {
-      const response = await fetch('http://localhost:5000/api/tts', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, lang: langTag }),
