@@ -16,7 +16,11 @@ const app = express();
 
 // ─── CORS (Must be before other middleware) ─────────────────────────────────
 app.use(cors({
-    origin: [process.env.FRONTEND_URL, 'http://localhost:5173'],
+    origin: function (origin, callback) {
+        // Dynamically allow the incoming origin (Reflect origin).
+        // This permanently fixes CORS strict-matching issues.
+        callback(null, origin || true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
