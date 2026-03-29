@@ -388,10 +388,7 @@ const LandingPage = () => {
                 <Upload className="w-5 h-5" />
                 {t.cta_primary}
               </button>
-              <button className="border-2 border-green-600 text-green-600 px-8 py-4 rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-green-50 transition-all duration-300">
-                {t.cta_secondary}
-                <ArrowRight className="w-5 h-5" />
-              </button>
+
             </div>
           </div>
 
