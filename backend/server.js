@@ -5,6 +5,7 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import ttsRoutes from './routes/ttsRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -37,6 +38,7 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/report', reportRoutes);
+app.use('/api/tts', ttsRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

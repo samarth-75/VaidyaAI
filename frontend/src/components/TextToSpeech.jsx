@@ -1,175 +1,137 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Volume2, Pause, Play, Square, VolumeX } from 'lucide-react';
 
-// ─── Language code mapping (app code → BCP 47 tag) ─────────────────────────
+// ─── Language code mapping (app code → Google TTS language tag) ──────────────
 const LANG_MAP = {
-  en: 'en-IN',
-  hi: 'hi-IN',
-  mr: 'mr-IN',
-  ta: 'ta-IN',
-  te: 'te-IN',
-  bn: 'bn-IN',
-  gu: 'gu-IN',
-  kn: 'kn-IN',
+  en: 'en',
+  hi: 'hi',
+  mr: 'mr',
+  ta: 'ta',
+  te: 'te',
+  bn: 'bn',
+  gu: 'gu',
+  kn: 'kn',
 };
 
 // ─── UI label translations ──────────────────────────────────────────────────
 const ttsTranslations = {
-  en: { listen: 'Listen', pause: 'Pause', resume: 'Resume', stop: 'Stop', speaking: 'Speaking…', paused: 'Paused', noSupport: 'Your browser does not support text-to-speech' },
-  hi: { listen: 'सुनें', pause: 'रोकें', resume: 'जारी रखें', stop: 'बंद करें', speaking: 'बोल रहा है…', paused: 'रुका हुआ', noSupport: 'आपका ब्राउज़र टेक्स्ट-टू-स्पीच समर्थन नहीं करता' },
-  mr: { listen: 'ऐका', pause: 'थांबवा', resume: 'पुन्हा सुरू', stop: 'बंद करा', speaking: 'बोलत आहे…', paused: 'थांबलेले', noSupport: 'तुमचा ब्राउझर टेक्स्ट-टू-स्पीच समर्थन करत नाही' },
-  ta: { listen: 'கேளுங்கள்', pause: 'இடைநிறுத்து', resume: 'தொடர்', stop: 'நிறுத்து', speaking: 'பேசுகிறது…', paused: 'இடைநிறுத்தப்பட்டது', noSupport: 'உங்கள் உலாவி உரையிலிருந்து பேச்சை ஆதரிக்கவில்லை' },
-  te: { listen: 'వినండి', pause: 'ఆపు', resume: 'కొనసాగించు', stop: 'ఆపివేయి', speaking: 'మాట్లాడుతోంది…', paused: 'ఆపివేయబడింది', noSupport: 'మీ బ్రౌజర్ టెక్స్ట్-టు-స్పీచ్ మద్దతు ఇవ్వదు' },
-  bn: { listen: 'শুনুন', pause: 'থামান', resume: 'আবার শুরু', stop: 'বন্ধ করুন', speaking: 'বলছে…', paused: 'থামানো হয়েছে', noSupport: 'আপনার ব্রাউজার টেক্সট-টু-স্পিচ সমর্থন করে না' },
-  gu: { listen: 'સાંભળો', pause: 'થોભો', resume: 'ચાલુ રાખો', stop: 'બંધ કરો', speaking: 'બોલી રહ્યું છે…', paused: 'થોભેલું', noSupport: 'તમારું બ્રાઉઝર ટેક્સ્ટ-ટુ-સ્પીચ સપોર્ટ કરતું નથી' },
-  kn: { listen: 'ಕೇಳಿ', pause: 'ವಿರಾಮ', resume: 'ಮುಂದುವರಿಸಿ', stop: 'ನಿಲ್ಲಿಸಿ', speaking: 'ಮಾತನಾಡುತ್ತಿದೆ…', paused: 'ವಿರಾಮಗೊಂಡಿದೆ', noSupport: 'ನಿಮ್ಮ ಬ್ರೌಸರ್ ಪಠ್ಯ-ಗೆ-ಮಾತು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ' },
+  en: { listen: 'Listen', pause: 'Pause', resume: 'Resume', stop: 'Stop', speaking: 'Speaking…', paused: 'Paused', loading: 'Loading audio…' },
+  hi: { listen: 'सुनें', pause: 'रोकें', resume: 'जारी रखें', stop: 'बंद करें', speaking: 'बोल रहा है…', paused: 'रुका हुआ', loading: 'ऑडियो लोड हो रहा है…' },
+  mr: { listen: 'ऐका', pause: 'थांबवा', resume: 'पुन्हा सुरू', stop: 'बंद करा', speaking: 'बोलत आहे…', paused: 'थांबलेले', loading: 'ऑडिओ लोड होत आहे…' },
+  ta: { listen: 'கேளுங்கள்', pause: 'இடைநிறுத்து', resume: 'தொடர்', stop: 'நிறுத்து', speaking: 'பேசுகிறது…', paused: 'இடைநிறுத்தப்பட்டது', loading: 'ஆடியோ ஏற்றப்படுகிறது…' },
+  te: { listen: 'వినండి', pause: 'ఆపు', resume: 'కొనసాగించు', stop: 'ఆపివేయి', speaking: 'మాట్లాడుతోంది…', paused: 'ఆపివేయబడింది', loading: 'ఆడియో లోడ్ అవుతోంది…' },
+  bn: { listen: 'শুনুন', pause: 'থামান', resume: 'আবার শুরু', stop: 'বন্ধ করুন', speaking: 'বলছে…', paused: 'থামানো হয়েছে', loading: 'অডিও লোড হচ্ছে…' },
+  gu: { listen: 'સાંભળો', pause: 'થોભો', resume: 'ચાલુ રાખો', stop: 'બંધ કરો', speaking: 'બોલી રહ્યું છે…', paused: 'થોભેલું', loading: 'ઑડિયો લોડ થઈ રહ્યું છે…' },
+  kn: { listen: 'ಕೇಳಿ', pause: 'ವಿರಾಮ', resume: 'ಮುಂದುವರಿಸಿ', stop: 'ನಿಲ್ಲಿಸಿ', speaking: 'ಮಾತನಾಡುತ್ತಿದೆ…', paused: 'ವಿರಾಮಗೊಂಡಿದೆ', loading: 'ಆಡಿಯೋ ಲೋಡ್ ಆಗುತ್ತಿದೆ…' },
 };
-
-// ─── Chunk long text at sentence boundaries (~200 chars) ─────────────────────
-function chunkText(text, maxLen = 200) {
-  if (!text) return [];
-  const sentences = text.match(/[^.!?।।\n]+[.!?।।\n]?/g) || [text];
-  const chunks = [];
-  let current = '';
-
-  for (const sentence of sentences) {
-    if ((current + sentence).length > maxLen && current.length > 0) {
-      chunks.push(current.trim());
-      current = sentence;
-    } else {
-      current += sentence;
-    }
-  }
-  if (current.trim()) chunks.push(current.trim());
-  return chunks;
-}
-
-// ─── Find best voice for a language ──────────────────────────────────────────
-function findBestVoice(langTag) {
-  const voices = window.speechSynthesis.getVoices();
-  if (!voices.length) return null;
-
-  // 1. Exact match (e.g. hi-IN)
-  let voice = voices.find(v => v.lang === langTag);
-  if (voice) return voice;
-
-  // 2. Prefix match (e.g. hi)
-  const prefix = langTag.split('-')[0];
-  voice = voices.find(v => v.lang.startsWith(prefix));
-  if (voice) return voice;
-
-  // 3. Fallback to en-IN or any English
-  voice = voices.find(v => v.lang === 'en-IN');
-  if (voice) return voice;
-
-  voice = voices.find(v => v.lang.startsWith('en'));
-  return voice || voices[0];
-}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 const TextToSpeech = ({ text, currentLang = 'en' }) => {
-  const [status, setStatus] = useState('idle'); // idle | speaking | paused
+  const [status, setStatus] = useState('idle'); // idle | loading | speaking | paused
+  const audioRef = useRef(null);
   const chunkIndexRef = useRef(0);
-  const chunksRef = useRef([]);
-  const utteranceRef = useRef(null);
+  const audioChunksRef = useRef([]);  // base64 chunks from backend
 
-  const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
   const t = ttsTranslations[currentLang] || ttsTranslations.en;
-  const langTag = LANG_MAP[currentLang] || 'en-IN';
-
-  // Ensure voices are loaded (some browsers load them asynchronously)
-  useEffect(() => {
-    if (!supported) return;
-    const loadVoices = () => window.speechSynthesis.getVoices();
-    loadVoices();
-    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
-    return () => {
-      window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-    };
-  }, [supported]);
+  const langTag = LANG_MAP[currentLang] || 'en';
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (supported) {
-        window.speechSynthesis.cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current = null;
       }
     };
-  }, [supported]);
+  }, []);
 
-  // Speak a single chunk, then recursively speak the next
-  const speakChunk = useCallback((index) => {
-    if (index >= chunksRef.current.length) {
+  // Play a single chunk, then recursively play the next
+  const playChunk = useCallback((index) => {
+    if (index >= audioChunksRef.current.length) {
       setStatus('idle');
+      audioRef.current = null;
       return;
     }
     chunkIndexRef.current = index;
 
-    const utterance = new SpeechSynthesisUtterance(chunksRef.current[index]);
-    utterance.lang = langTag;
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
+    const dataUri = `data:audio/mpeg;base64,${audioChunksRef.current[index]}`;
+    const audio = new Audio(dataUri);
+    audioRef.current = audio;
 
-    const voice = findBestVoice(langTag);
-    if (voice) utterance.voice = voice;
-
-    utterance.onend = () => {
-      speakChunk(index + 1);
+    audio.onended = () => {
+      playChunk(index + 1);
     };
-    utterance.onerror = (e) => {
-      if (e.error !== 'interrupted' && e.error !== 'canceled') {
-        console.warn('TTS error:', e.error);
-      }
+
+    audio.onerror = (e) => {
+      console.warn('TTS audio error on chunk', index, e);
+      playChunk(index + 1); // skip to next chunk
+    };
+
+    audio.play().catch((err) => {
+      console.warn('TTS play failed:', err);
       setStatus('idle');
-    };
+    });
+  }, []);
 
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  }, [langTag]);
+  const handlePlay = useCallback(async () => {
+    if (!text) return;
 
-  const handlePlay = useCallback(() => {
-    if (!supported || !text) return;
+    // Stop anything currently playing
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
 
-    // Cancel anything currently playing
-    window.speechSynthesis.cancel();
+    setStatus('loading');
 
-    const chunks = chunkText(text);
-    chunksRef.current = chunks;
-    chunkIndexRef.current = 0;
-    setStatus('speaking');
+    try {
+      const response = await fetch('http://localhost:5000/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, lang: langTag }),
+      });
 
-    // Small delay to let cancel() finish
-    setTimeout(() => {
-      speakChunk(0);
-    }, 50);
-  }, [supported, text, speakChunk]);
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'TTS request failed');
+      }
+
+      audioChunksRef.current = data.audioChunks;
+      chunkIndexRef.current = 0;
+      setStatus('speaking');
+      playChunk(0);
+    } catch (err) {
+      console.error('TTS fetch error:', err);
+      setStatus('idle');
+    }
+  }, [text, langTag, playChunk]);
 
   const handlePause = useCallback(() => {
-    if (!supported) return;
-    window.speechSynthesis.pause();
-    setStatus('paused');
-  }, [supported]);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setStatus('paused');
+    }
+  }, []);
 
   const handleResume = useCallback(() => {
-    if (!supported) return;
-    window.speechSynthesis.resume();
-    setStatus('speaking');
-  }, [supported]);
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {});
+      setStatus('speaking');
+    }
+  }, []);
 
   const handleStop = useCallback(() => {
-    if (!supported) return;
-    window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
+    audioChunksRef.current = [];
     setStatus('idle');
-  }, [supported]);
-
-  if (!supported) {
-    return (
-      <div className="flex items-center gap-2 text-amber-600 text-sm mt-3">
-        <VolumeX className="w-4 h-4" />
-        <span>{t.noSupport}</span>
-      </div>
-    );
-  }
+  }, []);
 
   return (
     <div className="mt-4">
@@ -183,6 +145,20 @@ const TextToSpeech = ({ text, currentLang = 'en' }) => {
           >
             <Volume2 className="w-4 h-4" />
             {t.listen}
+          </button>
+        )}
+
+        {/* Loading */}
+        {status === 'loading' && (
+          <button
+            disabled
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-xl font-semibold text-sm cursor-wait"
+          >
+            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            {t.loading}
           </button>
         )}
 

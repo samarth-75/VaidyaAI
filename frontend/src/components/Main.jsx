@@ -606,11 +606,7 @@ const VaidyaAIApp = () => {
 
                         {/* Audio Explanation */}
                         <TextToSpeech
-                          text={[
-                            output.summary,
-                            ...output.findings.map(f => `${f.label}: ${f.value}`),
-                            ...remedies.map(r => `${r.title}. ${r.description}`)
-                          ].join('. ')}
+                          text={output.summary}
                           currentLang={currentLang}
                         />
                       </div>
